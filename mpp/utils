@@ -1,0 +1,22 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#ifndef MPP_UTILS
+#define MPP_UTILS
+
+// std headers
+#include <type_traits>
+
+// headers from Eigen
+#include <Eigen/Core>
+#include <Eigen/Dense>
+
+// headers from boost
+#include <boost/assert.hpp>
+
+// mpp headers
+#include "src/utils/randomSTD.hpp"
+#include "src/utils/GaussPotentialEnergy.hpp"
+
+#endif //MPP_UTILS

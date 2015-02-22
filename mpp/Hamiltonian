@@ -1,0 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#ifndef MPP_HAMILTONIAN
+#define MPP_HAMILTONIAN
+
+#include "utils"
+#include "src/Hamiltonian/GaussKineticEnergy.hpp"
+#include "src/Hamiltonian/leapfrog.hpp"
+#include "src/Hamiltonian/canonicalHMC.hpp"
+
+#endif //MPP_HAMILTONIAN
