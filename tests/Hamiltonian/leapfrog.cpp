@@ -16,7 +16,7 @@ void testIdentiyMatrixGauss(void)
     typedef typename potEngType::realMatrixType realMatrixType;
     typedef typename realMatrixType::Index indexType;
     typedef mpp::Hamiltonian::GaussKineticEnergy<realScalarType> kinEngType;
-    typedef mpp::Hamiltonian::leapfrog<potEngType,kinEngType> leapfrogIntegratorPolicy;
+    typedef mpp::Hamiltonian::leapfrog leapfrogIntegratorPolicy;
 
     const indexType N = 100;
 
@@ -50,7 +50,7 @@ void testIdentiyMatrixGauss(void)
     potEngType G(mu,sigmaInv);
     kinEngType K(mInv);
 
-    leapfrogIntegratorPolicy::integrate(eps,nSteps,G,K,q,p);
+    leapfrogIntegratorPolicy::integrate<potEngType,kinEngType>(eps,nSteps,G,K,q,p);
 
     realScalarType meps=std::numeric_limits<realScalarType>::epsilon();
 
