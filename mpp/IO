@@ -1,0 +1,8 @@
+#ifndef MPP_IO
+#define MPP_IO
+
+#include "utils"
+
+#include "src/IO/writeAllParams.hpp"
+
+#endif //MPP_IO

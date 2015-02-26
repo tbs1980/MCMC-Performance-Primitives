@@ -9,39 +9,39 @@ namespace mpp{ namespace IO{
      *
      * \brief A class for managing the IO.
      *
-     * \tparam _realMatrixType real matrix type
+     * \tparam _realScalarType real matrix type
      *
      * This class manages the IO of the sampler. In particular this class
      * writes the states of all the parameters to the chain output file.
      */
-    template<class _realMatrixType>
+    template<class _realScalarType>
     class IOWriteAllParams
     {
     public:
 
         /**
-         * \typedef _realMatrixType realMatrixType
-         * \brief real matrix type
+         * \typedef _realScalarType realScalarType;
+         * \brief the floating point type
          */
-        typedef _realMatrixType realMatrixType;
-
-        /**
-         * \typedef typename realMatrixType::Scalar realScalarType
-         * \breif floating point type
-         */
-        typedef typename realMatrixType::Scalar realScalarType;
-
-        /**
-         * \typedef typename realMatrixType::Index indexType
-         * \breif integral type
-         */
-        typedef typename realMatrixType::Index indexType;
+        typedef _realScalarType realScalarType;
 
         /**
          * \typedef typename Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realVectorType;
          * \brief real vector type
          */
         typedef typename Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realVectorType;
+
+        /**
+         * \typedef typename Eigen::Matrix<realScalarType, Eigen::Dynamic, Eigen::Dynamic> realMatrixType;
+         * \brief real matrix type
+         */
+        typedef typename Eigen::Matrix<realScalarType, Eigen::Dynamic, Eigen::Dynamic> realMatrixType;
+
+        /**
+         * \typedef typename realVectorType::Index indexType;
+         * \brief integral type
+         */
+        typedef typename realVectorType::Index indexType;
 
         static_assert(std::is_floating_point<realScalarType>::value,
             "PARAMETER SHOULD BE A FLOATING POINT TYPE");
