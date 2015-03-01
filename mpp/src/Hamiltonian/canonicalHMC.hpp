@@ -47,8 +47,10 @@ namespace mpp{ namespace Hamiltonian{
         {
             BOOST_ASSERT_MSG(samples.rows() == logPostVals.rows(),
                 "number of samples should be equal to size of logPostVals");
+            BOOST_ASSERT_MSG(samples.cols() == m_q0.rows(),
+                "number of parameters in the samples does not match the number of parameters in the start point");
             size_t numSamples = (size_t) samples.rows();
-            size_t numDims = (size_t) samples.cols();
+            size_t numParams = (size_t) samples.cols();
 
             size_t iter = 0;
             size_t samp = 0;
@@ -66,8 +68,8 @@ namespace mpp{ namespace Hamiltonian{
                 const size_t numSteps = (size_t)(u*(realScalarType)m_maxNumSteps);
 
                 // generate a random momentum vector
-                realVectorType p0(numDims);
-                for(size_t i=0;i<numDims;++i)
+                realVectorType p0(numParams);
+                for(size_t i=0;i<numParams;++i)
                 {
                     p0(i) = m_rVGen.normal();
                 }
@@ -115,14 +117,21 @@ namespace mpp{ namespace Hamiltonian{
             m_rVGen.seed(seed);
         }
 
-        inline void getRandState(std::stringstream & state) const
+        inline std::stringstream getRandState(void) const
         {
+            std::stringstream state;
             m_rVGen.getState(state);
+            return state;
         }
 
         inline void setRandState(std::stringstream & state)
         {
-            m_rVGen.getState(state);
+            m_rVGen.setState(state);
+        }
+
+        inline realVectorType getStartPoint(void) const
+        {
+            return m_q0;
         }
 
         inline void setStartPoint(realVectorType const & q0)
@@ -130,6 +139,11 @@ namespace mpp{ namespace Hamiltonian{
             BOOST_ASSERT_MSG(q0.rows() == m_q0.rows(),
             "Dimensions of input q0 does not agree with the that of m_q0");
             m_q0 = q0;
+        }
+
+        inline size_t numParams(void) const
+        {
+            return (size_t) m_q0.rows();
         }
 
     private:
