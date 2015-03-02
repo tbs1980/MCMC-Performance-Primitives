@@ -51,4 +51,6 @@ void testCanonicalHMCDim10(void)
 BOOST_AUTO_TEST_CASE(CanonicalHMCDim10)
 {
     testCanonicalHMCDim10<float>();
+    testCanonicalHMCDim10<double>();
+    testCanonicalHMCDim10<long double>();
 }

@@ -8,4 +8,5 @@ project(MPPUnitTests CXX)
 
 add_subdirectory(utils)
 add_subdirectory(IO)
+add_subdirectory(control)
 add_subdirectory(Hamiltonian)
