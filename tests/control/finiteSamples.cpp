@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE Control
 #define BOOST_TEST_DYN_LINK
+#define BOOST_ALL_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
 
@@ -16,10 +17,10 @@ void testFiniteSamples(void)
 
     size_t const numParams = 10;
     size_t const packetSize = 100;
-    size_t const numBurn = 1000;
-    size_t const numSamples = 10000;
+    size_t const numBurn = 100;
+    size_t const numSamples = 100;
     std::string const rootPathStr("./testFiniteSamplesControl");
-    bool const consoleOutput = false;
+    bool const consoleOutput = true;
     realVectorType const startPoint = realVectorType::Zero(numParams);
     seedType seed = 0;
     rVGenType rvGen(seed);
@@ -34,6 +35,8 @@ void testFiniteSamples(void)
         consoleOutput,startPoint,randState);
 
     ctrl.dump(samples,accRate,randState);
+    //ctrl.dump(samples,accRate,randState);
+    //ctrl.dump(samples,accRate,randState);
 }
 
 BOOST_AUTO_TEST_CASE(finiteSamples)

@@ -30,10 +30,47 @@ namespace mpp { namespace control {
             BOOST_ASSERT_MSG(numParams == (size_t) startPoint.rows(),
                 "The startpoint should have numParams number of rows");
 
-            m_archiveOutFile = m_rootPathStr + std::string(".resume");
+            m_archiveOutFileName = m_rootPathStr + std::string(".resume");
+            m_chainOutFileName = m_rootPathStr + std::string(".chain");
             for(size_t i=0;i<m_numParams;++i)
             {
                 m_startPoint[i] = startPoint(i);
+            }
+
+            //see if the resume file exists?
+            if(boost::filesystem::exists(m_archiveOutFileName))
+            {
+                if(m_consoleOutput)
+                {
+                    BOOST_LOG_TRIVIAL(info) << "Resume file found. Starting sampling from the previous state.";
+                }
+
+                //now load the information from the resume file
+                std::ifstream ifs(m_archiveOutFileName);
+                boost::archive::binary_iarchive ia(ifs);
+                ia >> (*this);
+                ifs.close();
+            }
+            else
+            {
+                // we didn't find any resume files. Can we open one for writing
+                std::ofstream ofs(m_archiveOutFileName);
+                if(ofs.is_open())
+                {
+                    // yes. now close and remove that file
+                    ofs.close();
+                    boost::filesystem::remove(m_archiveOutFileName);
+                }
+                else
+                {
+                    // we cannnot open this flie for writing. stop
+                    if(m_consoleOutput)
+                    {
+                        BOOST_LOG_TRIVIAL(error) << "Cannot open the resume file "<<m_archiveOutFileName<< "For writing";
+                    }
+                    // no need to proceed
+                    m_continueSampling = false;
+                }
             }
         }
 
@@ -48,19 +85,22 @@ namespace mpp { namespace control {
             if(m_samplesBurned >= m_numBurn)
             {
                 m_samplesTaken += n;
+                if(m_consoleOutput)
+                {
+                    BOOST_LOG_TRIVIAL(info) << "Number of samples taken = "<<m_samplesTaken;
+                }
             }
             else
             {
                 m_samplesBurned += n;
+                if(m_consoleOutput)
+                {
+                    BOOST_LOG_TRIVIAL(info) << "Number of samples burned = "<<m_samplesBurned;
+                }
             }
 
             // should we continue sampling ?
             m_continueSampling = m_samplesTaken >= m_numSamples ? false : true;
-
-            // write the resume information to a file
-            std::ofstream ofs(m_archiveOutFile);
-            boost::archive::binary_oarchive oa(ofs);
-            oa << (*this);
 
             // save the states
             for(size_t i=0;i<m_numParams;++i)
@@ -69,8 +109,46 @@ namespace mpp { namespace control {
             }
             m_accRate = accRate;
             m_randState = randState;
+
+            // write the resume information to a file
+            std::ofstream ofs(m_archiveOutFileName);
+            boost::archive::binary_oarchive oa(ofs);
+            oa << (*this);
+            ofs.close();
+
+            //has the sampling finished?
+            if(m_continueSampling == false)
+            {
+                if(m_consoleOutput)
+                {
+                    BOOST_LOG_TRIVIAL(info) << "Sampling finished";
+                }
+                // delete the archive file
+                boost::filesystem::remove(m_archiveOutFileName);
+                // rename the chain file
+                renameChainFile();
+            }
         }
+
     private:
+
+        void renameChainFile(void)
+        {
+
+            using namespace boost::local_time;
+            time_zone_ptr zone(new posix_time_zone("MST-07"));
+            local_date_time ldt = local_sec_clock::local_time(zone);
+            std::stringstream ss;
+            local_time_facet* output_facet = new local_time_facet();
+            ss.imbue(std::locale(std::locale::classic(), output_facet));
+            output_facet->format(local_time_facet::iso_time_format_specifier);
+            ss << ldt;
+            std::string finishedChainOutFileName = m_rootPathStr + std::string(".")
+                + ss.str() + std::string(".finished.chain");
+
+            boost::filesystem::rename(m_chainOutFileName,finishedChainOutFileName);
+
+        }
 
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version)
@@ -88,7 +166,7 @@ namespace mpp { namespace control {
             //ar & m_accRate;
             ar & m_randState;
 
-            if(version > 0)
+            if(version >= 0)
             {
                 ar & m_accRate;
             }
@@ -110,7 +188,8 @@ namespace mpp { namespace control {
         std::string m_randState;
         realScalarType m_accRate;
 
-        std::string m_archiveOutFile;
+        std::string m_archiveOutFileName;
+        std::string m_chainOutFileName;
     };
 
 }//namespace control

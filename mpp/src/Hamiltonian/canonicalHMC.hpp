@@ -23,9 +23,12 @@ namespace mpp{ namespace Hamiltonian{
         typedef typename Eigen::Matrix<realScalarType, Eigen::Dynamic, Eigen::Dynamic> realMatrixType;
 
         typedef typename _kinEngType::realScalarType realScalarTypeTypeKE;
+        typedef typename _randVarGenType::realScalarType realScalarTypeTypeRVGen;
 
         static_assert(std::is_same<realScalarType,realScalarTypeTypeKE>::value,
             "POTENTIAL ENERGY AND KINTETIC ENERGY SHOULD SHOULD HAVE THE SAME FLOATING POINT TYPE");
+        static_assert(std::is_same<realScalarType,realScalarTypeTypeRVGen>::value,
+            "RANDOM VARARIATE GENERATOR AND KINTETIC ENERGY SHOULD SHOULD HAVE THE SAME FLOATING POINT TYPE");
 
         static const size_t MAX_NUM_STEPS = 100;
 
