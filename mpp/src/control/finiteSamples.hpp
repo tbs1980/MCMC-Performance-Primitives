@@ -146,6 +146,11 @@ namespace mpp { namespace control {
             std::string finishedChainOutFileName = m_rootPathStr + std::string(".")
                 + ss.str() + std::string(".finished.chain");
 
+            if(m_consoleOutput)
+            {
+                BOOST_LOG_TRIVIAL(info) << "Renaming the chain file to "<<finishedChainOutFileName;
+            }
+
             boost::filesystem::rename(m_chainOutFileName,finishedChainOutFileName);
 
         }
