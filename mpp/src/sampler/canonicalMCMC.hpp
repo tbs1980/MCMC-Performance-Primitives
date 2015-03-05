@@ -3,13 +3,13 @@
 
 namespace mpp{ namespace sampler{
 
-    template<class _engineType,class _IOType,class _ctrlrType,class _tunerType>
+    template<class _engineType,class _ctrlrType,class _IOType>
     class canonicalMCMCSampler
     {
     public:
         typedef _engineType engineType;
-        typedef _IOType IOType;
         typedef _ctrlrType ctrlrType;
+        typedef _IOType IOType;
         typedef typename engineType::realMatrixType realMatrixType;
         typedef typename engineType::realVectorType realVectorType;
         typedef typename engineType::realScalarType realScalarType;
@@ -17,11 +17,9 @@ namespace mpp{ namespace sampler{
         static_assert(std::is_floating_point<realScalarType>::value,
             "PARAMETER SHOULD BE A FLOATING POINT TYPE");
 
-        static void run(engineType & eng,IOType & IO,runCtrlType & ctrlr,tunerType & tuner)
+        static void run(engineType & eng,ctrlrType & ctrlr,IOType & IO)
         {
             BOOST_ASSERT_MSG(eng.numParams() == ctrlr.numParams(),
-                "Dimensionality mismatch");
-            BOOST_ASSERT_MSG(eng.numParams() == tuner.numParams(),
                 "Dimensionality mismatch");
 
             while( ctrlr.continueSampling() )
@@ -31,15 +29,13 @@ namespace mpp{ namespace sampler{
 
                 eng.generate(samples,logPostVals);
 
-                std::stringstream randState = eng.getRandState(randState);
+                std::string randState = eng.getRandState();
                 realScalarType accRate = eng.getAcceptanceRate();
                 realVectorType startPoint = eng.getStartPoint();
 
-                ctrlr.dump(startPoint,randState,accRate);
+                ctrlr.dump(startPoint,accRate,randState);
 
                 IO.write(samples,logPostVals);
-
-                tuner.tune(samples,accRate);
             }
         }
     };

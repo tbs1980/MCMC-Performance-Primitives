@@ -14,7 +14,7 @@ namespace mpp{ namespace IO{
      * This class manages the IO of the sampler. In particular this class
      * writes the states of all the parameters to the chain output file.
      */
-    template<class _realScalarType>
+    template<typename _realScalarType>
     class IOWriteAllParams
     {
     public:

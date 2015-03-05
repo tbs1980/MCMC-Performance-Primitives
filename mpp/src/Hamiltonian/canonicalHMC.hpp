@@ -120,15 +120,17 @@ namespace mpp{ namespace Hamiltonian{
             m_rVGen.seed(seed);
         }
 
-        inline std::stringstream getRandState(void) const
+        inline std::string getRandState(void) const
         {
             std::stringstream state;
             m_rVGen.getState(state);
-            return state;
+            return state.str();
         }
 
-        inline void setRandState(std::stringstream & state)
+        inline void setRandState(std::string & stateStr)
         {
+            std::stringstream state;
+            state<<stateStr;
             m_rVGen.setState(state);
         }
 

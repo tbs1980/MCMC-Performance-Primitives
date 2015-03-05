@@ -130,6 +130,41 @@ namespace mpp { namespace control {
             }
         }
 
+        std::string const & getChainFileName() const
+        {
+            return m_chainOutFileName;
+        }
+
+        realVectorType getStartPoint() const
+        {
+            realVectorType q0(m_numParams);
+            for(size_t i=0;i<m_numParams;++i)
+            {
+                q0(i) = m_startPoint[i];
+            }
+            return q0;
+        }
+
+        std::string const& getRandState() const
+        {
+            return m_randState;
+        }
+
+        size_t numParams() const
+        {
+            return m_numParams;
+        }
+
+        bool continueSampling() const
+        {
+            return m_continueSampling;
+        }
+
+        size_t packetSize() const
+        {
+            return m_packetSize;
+        }
+
     private:
 
         void renameChainFile(void)
