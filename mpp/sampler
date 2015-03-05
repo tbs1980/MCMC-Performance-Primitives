@@ -1,2 +1,2 @@
 #include "utils"
-#include "src/sampler/canonicalMCMC.hpp"
+#include "src/sampler/canonicalSampler.hpp"

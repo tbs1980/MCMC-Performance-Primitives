@@ -62,8 +62,8 @@ void testCanonical(void)
 
     // define the finite samples control
     size_t const packetSize = 100;
-    size_t const numBurn = 100;
-    size_t const numSamples = 100;
+    size_t const numBurn = 0;
+    size_t const numSamples = 1000;
     std::string const rootPathStr("./testCanonicalSampler");
     bool const consoleOutput = true;
 

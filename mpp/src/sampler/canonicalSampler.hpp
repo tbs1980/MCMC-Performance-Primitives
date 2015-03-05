@@ -33,7 +33,7 @@ namespace mpp{ namespace sampler{
                 realScalarType accRate = eng.getAcceptanceRate();
                 realVectorType startPoint = eng.getStartPoint();
 
-                ctrlr.dump(startPoint,accRate,randState);
+                ctrlr.dump(samples,accRate,randState);
 
                 IO.write(samples,logPostVals);
             }
