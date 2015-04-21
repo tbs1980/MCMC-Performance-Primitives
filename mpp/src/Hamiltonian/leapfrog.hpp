@@ -71,7 +71,7 @@ namespace mpp{ namespace Hamiltonian{
             p = p + 0.5*eps*dq;
 
             // now take full steps
-            for(indexType i=0;i<numSteps;++i)
+            for(size_t i=0;i<numSteps;++i)
             {
                 K.derivs(p,dp);
                 q = q - eps*dp;
