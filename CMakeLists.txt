@@ -74,3 +74,4 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 enable_testing()
 add_subdirectory(tests)
+add_subdirectory(libmpp)
