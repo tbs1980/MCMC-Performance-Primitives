@@ -24,11 +24,11 @@
  *
  * You can compile this example by
  *
- * g++ -std=c11 -g0 -O3  -pedantic -Wall -Wextra -Ipath_to_eigen_headers -Ipath_to_boost_headers -I../ canonicalHMCSamplerGaussian.cpp -o example_canonicalHMCSamplerGaussian -Lpath_to_boost_lib -Lpath_to_pthread -lboost_serialization -lboost_filesystem -lboost_system -lboost_log -lboost_thread -lboost_date_time -lpthread
+ * g++  -pedantic -Wall -Wextra -Wfatal-errors -std=c++11 -g0 -O3 -Ipath_to_eigen_headers -Ipath_to_boost_headers -I../ canonicalHMCSamplerGaussian.cpp -o example_canonicalHMCSamplerGaussian -Lpath_to_boost_lib -Lpath_to_pthread -lboost_serialization -lboost_filesystem -lboost_system -lboost_log -lboost_thread -lboost_date_time -lpthread
  *
  * For example in my desktop, I will compile this by
  *
- * g++ -std=c11 -g0 -O3  -pedantic -Wall -Wextra -I/usr/include/eigen3 -I/usr/include -I../ canonicalHMCSamplerGaussian.cpp -o example_canonicalHMCSamplerGaussian -L/usr/lib/x86_64-linux-gnu -lboost_serialization -lboost_filesystem -lboost_system -lboost_log -lboost_thread -lboost_date_time -lpthread
+ * g++  -pedantic -Wall -Wextra -Wfatal-errors -std=c++11 -g0 -O3 -I/usr/include/eigen3 -I/usr/include -I../ canonicalHMCSamplerGaussian.cpp -o example_canonicalHMCSamplerGaussian -L/usr/lib/x86_64-linux-gnu -lboost_serialization -lboost_filesystem -lboost_system -lboost_log -lboost_thread -lboost_date_time -lpthread
  *
  * This will create an executable example_canonicalHMCSamplerGaussian
  */

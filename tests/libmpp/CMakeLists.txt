@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 cmake_minimum_required(VERSION 2.8)
-project(TestUtils C)
+project(test_libmpp C)
 
 include_directories(${CMAKE_SOURCE_DIR}/libmpp/include)
 
