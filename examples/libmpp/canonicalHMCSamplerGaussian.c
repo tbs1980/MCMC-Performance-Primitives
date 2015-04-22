@@ -8,25 +8,36 @@
  *
  * You can compile this example by
  *
- * g++ -pedantic -Wall -Wextra -Wfatal-errors -std=c11 -g0 -O3 -Ipath_to_libmpp_headers canonicalHMCSamplerGaussian.c -o example_libmpp_canonicalHMCSamplerGaussian -Lpath_to_boost_lib -Lpath_to_pthread -lboost_serialization -lboost_filesystem -lboost_system -lboost_log -lboost_thread -lboost_date_time -lpthread -lstdc++
+ * gcc -pedantic -Wall -Wextra -Wfatal-errors -std=c11 -g0 -O3 -Ipath_to_libmpp_headers canonicalHMCSamplerGaussian.c -o example_libmpp_canonicalHMCSamplerGaussian -Lpath_to_mpp_lib -Lpath_to_boost_lib -Lpath_to_pthread_lib -lboost_serialization -lboost_filesystem -lboost_system -lboost_log -lboost_thread -lboost_date_time -lpthread -lstdc++
  *
  * For example in my desktop, I will compile this by
  *
- * g++ -pedantic -Wall -Wextra -Wfatal-errors -std=c11 -g0 -O3 -I/usr/local/include/ canonicalHMCSamplerGaussian.cpp -o example_canonicalHMCSamplerGaussian -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib -lboost_serialization -lboost_filesystem -lboost_system -lboost_log -lboost_thread -lboost_date_time -lpthread -lstdc++
+ * gcc  -pedantic -Wall -Wextra -Wfatal-errors -std=c11 -g0 -O3 -I/arxiv/libraries/ubuntu/gcc/mpp/include canonicalHMCSamplerGaussian.c -o example_lbmpp_canonicalHMCSamplerGaussian -L/arxiv/libraries/ubuntu/gcc/mpp/lib -L/usr/lib/x86_64-linux-gnu -lmpp -lboost_serialization -lboost_filesystem -lboost_system -lboost_log -lboost_thread -lboost_date_time -lpthread -lstdc++
  *
- * This will create an executable example_canonicalHMCSamplerGaussian
+ * This will create an executable example_lbmpp_canonicalHMCSamplerGaussian
+ *
+ * You also need to set LD_LIBRARY_PATH appropriately. For example,
+ *
+ * export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/arxiv/libraries/ubuntu/gcc/mpp/lib
+ *
  */
 
+// std headers
 #include <stdlib.h>
 
+// include the mpp header file
 #include <mpp.h>
 
 
-long const num_params = 10;
+// define the dimensionality of the Gaussian posterior
+long const num_params = 1000;
 
+// define the mean of the distribution
 double * mu;
+// define the invese of the diagonal covariance matrix, i.e, 1/var(i)
 double * sigma_inv;
 
+// define log-posterior function, value is returned to val
 void log_post_func(double const* q, double* val)
 {
     double log_post = 0;
@@ -37,6 +48,7 @@ void log_post_func(double const* q, double* val)
     *val = -0.5*log_post;
 }
 
+// define the derivatives of the log-post wrt q
 void log_post_derivs(double const* q, double* dq)
 {
     for(long i=0;i<num_params;++i)
@@ -44,6 +56,7 @@ void log_post_derivs(double const* q, double* dq)
         dq[i] = sigma_inv[i]*(mu[i] - q[i]);
     }
 }
+
 
 int main(void)
 {
@@ -77,7 +90,7 @@ int main(void)
     // number samples to be taken (after burning)
     long const num_samples = 1000;
     // path to chains and other output
-    char const* root_path_str = "./example_mpp_hmc_diag_canon";
+    char const* root_path_str = "./example_libmpp_hmc_diag_canon";
     // do we require output to console? 0 means NO, !=0 means YES
     int const console_output = 1;
     // delimiter for the chain data

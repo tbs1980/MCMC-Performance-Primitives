@@ -1,0 +1,6 @@
+FILE(GLOB MPP_libmpp_SRCS "*.h")
+
+INSTALL(FILES
+  ${MPP_libmpp_SRCS}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/include COMPONENT Devel
+  )
