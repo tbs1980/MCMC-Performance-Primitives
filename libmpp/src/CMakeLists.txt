@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 2.8)
 
+project(mppStaticAndSharedLibs)
+set(CMAKE_MACOSX_RPATH 1)
+
+
+if(APPLE)
+    set (CMAKE_SHARED_LINKER_FLAGS "-undefined dynamic_lookup")
+endif(APPLE)
+
+
 add_library(mpp_static STATIC mpp_hmc.cpp)
 add_library(mpp SHARED mpp_hmc.cpp)
 
