@@ -1,2 +1,7 @@
+#ifndef MPP_SAMPLER
+#define MPP_SAMPLER
+
 #include "utils"
 #include "src/sampler/canonicalSampler.hpp"
+
+#endif //MPP_SAMPLER

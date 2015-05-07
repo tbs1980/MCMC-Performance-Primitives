@@ -1,0 +1,6 @@
+#ifndef MPP_UI
+#define MPP_UI
+
+#include "src/UI/canonicalHamiltonianSampler.hpp"
+
+#endif //MPP_UI

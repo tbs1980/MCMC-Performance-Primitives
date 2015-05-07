@@ -5,6 +5,7 @@
 #include "control"
 #include "IO"
 #include "sampler"
+#include "UI"
 
 
 #endif //MPP_CORE
