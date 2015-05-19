@@ -81,3 +81,4 @@ endif(MPP_ENABLE_TESTING)
 
 add_subdirectory(libmpp)
 add_subdirectory(examples)
+add_subdirectory(pympp)
