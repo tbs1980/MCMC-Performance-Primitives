@@ -7,8 +7,7 @@ find_package(PythonLibs REQUIRED)
 find_package(NumPy REQUIRED)
 
 set(MPP_MODULE_SRCS "${CMAKE_SOURCE_DIR}/pympp/pympp_hmc.cpp")
-
-#configure_file(setup.py.in setup.py)
+set(MPP_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}")
 
 set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
 set(SETUP_PY "${CMAKE_CURRENT_BINARY_DIR}/setup.py")

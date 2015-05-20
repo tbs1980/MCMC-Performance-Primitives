@@ -3,13 +3,15 @@
 from distutils.core import setup, Extension
 
 source = ["${MPP_MODULE_SRCS}"]
-includes = ["${NUMPY_INCLUDE_DIRS}"]
+includes = ["${NUMPY_INCLUDE_DIRS}","${EIGEN3_INCLUDE_DIR}","${Boost_INCLUDE_DIRS}" ,"${MPP_INCLUDE_DIRS}"]
+libs = ["${Boost_LIBRARIES}"]
 
 # define the extension module
 mpp_module = Extension('mpp_module',
     sources = source,
     include_dirs = includes,
-    )
+    extra_compile_args=['-std=c++11','-Wfatal-errors'],
+    libraries=libs)
 
 # run the setup
 setup(ext_modules=[mpp_module])
