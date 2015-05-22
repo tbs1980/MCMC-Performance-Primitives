@@ -62,7 +62,7 @@ public:
         m_numDims = numDims;
     }
 
-    inline void value(realVectorType  const & q, realScalarType & val) const
+    inline void value(realVectorType   & q, realScalarType & val)
     {
         int nd = 1;
         npy_intp qDims[1]={q.size()};
@@ -71,14 +71,14 @@ public:
 
         npy_intp valDims[1]={1};
         PyObject* valOut = PyArray_SimpleNewFromData(nd,valDims,
-            numPyTypeTraits<realScalarType>::getNumPyDType(),val);
+            numPyTypeTraits<realScalarType>::getNumPyDType(),&val);
 
         Py_ssize_t tupleSize = 2;
         PyObject* argsTuple = PyTuple_Pack(tupleSize,qIn,valOut);
         PyEval_CallObject(m_p_logPostFunc,argsTuple);
     }
 
-    inline void derivs(realVectorType  const & q,realVectorType & dq) const
+    inline void derivs(realVectorType   & q,realVectorType & dq)
     {
         int nd = 1;
         npy_intp qDims[1]={q.size()};
@@ -87,7 +87,7 @@ public:
 
         npy_intp dQDims[1]={dq.size()};
         PyObject* dQOut = PyArray_SimpleNewFromData(nd,dQDims,
-            numPyTypeTraits<realScalarType>::getNumPyDType(),dQOut);
+            numPyTypeTraits<realScalarType>::getNumPyDType(),dq.data());
 
         Py_ssize_t tupleSize = 2;
         PyObject* argsTuple = PyTuple_Pack(tupleSize,qIn,dQOut);
@@ -127,26 +127,21 @@ static PyObject* canonicalHamiltonianSamplerImpl(PyObject* self, PyObject* args)
 
     // 3) get all the arguments from python
 
-    // argument 0 the log posterior function
-    PyObject*   pyObjLogPostFunc  = PyTuple_GetItem(args,0);
-
-    // argument 1 the log posterior derivatives 
-    PyObject*   pyObjLogPostDerivs  = PyTuple_GetItem(args,1);
-
-    // argument 2 the total number of parameters
+    // argument 0 the total number of parameters
     size_t const numParams =
-        static_cast<size_t>(PyLong_AsSsize_t(PyTuple_GetItem(args,2)));
+        static_cast<size_t>(PyLong_AsLong(PyTuple_GetItem(args,0)));
 
-    // argument 3 maximum value of epsilon in the leapfrog
+    // argument 1 maximum value of epsilon in the leapfrog
     realScalarType const maxEps =
-        static_cast<realScalarType>(PyFloat_AsDouble(PyTuple_GetItem(args,3)));
+        static_cast<realScalarType>(PyFloat_AsDouble(PyTuple_GetItem(args,1)));
 
-    // argument 4 maximum number of steps in the leapfrog
+    // argument 2 maximum number of steps in the leapfrog
     size_t const maxNumSteps =
-        static_cast<size_t>(PyLong_AsSsize_t(PyTuple_GetItem(args,4)));
+        static_cast<size_t>(PyLong_AsLong(PyTuple_GetItem(args,2)));
 
-    // argument 5 the start point of for the sampler
-    PyObject* pyObjStartPoint = PyTuple_GetItem(args, 5);
+
+    // argument 3 the start point of for the sampler
+    PyObject* pyObjStartPoint = PyTuple_GetItem(args, 3);
     PyArrayObject* pyArrObjStartPoint =
         reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(pyObjStartPoint,
         numPyTypeTraits<realScalarType>::getNumPyDType(), NPY_ARRAY_IN_ARRAY));
@@ -154,42 +149,42 @@ static PyObject* canonicalHamiltonianSamplerImpl(PyObject* self, PyObject* args)
         static_cast<realScalarType*>(PyArray_DATA(pyArrObjStartPoint));
     realVectorType  startPoint = make_vector<realScalarType>(pStartPoint,numParams);
 
-    // argument 6 random number seed
+    // argument 4 random number seed
     seedType const randSeed =
-        static_cast<seedType>(PyLong_AsSsize_t(PyTuple_GetItem(args,6)));
+        static_cast<seedType>(PyLong_AsLong(PyTuple_GetItem(args,4)));
 
-    // argument 7 packet size of the MCMC iteration
+    // argument 5 packet size of the MCMC iteration
     size_t const packetSize =
-        static_cast<size_t>(PyLong_AsSsize_t(PyTuple_GetItem(args,7)));
+        static_cast<size_t>(PyLong_AsLong(PyTuple_GetItem(args,5)));
 
-    // argument 8 number samples to be burned
+    // argument 6 number samples to be burned
     size_t const numBurn =
-        static_cast<size_t>(PyLong_AsSsize_t(PyTuple_GetItem(args,8)));
+        static_cast<size_t>(PyLong_AsLong(PyTuple_GetItem(args,6)));
 
-    // argument 9 number of samples to be taken after burning
+    // argument 7 number of samples to be taken after burning
     size_t const numSamples =
-        static_cast<size_t>(PyLong_AsSsize_t(PyTuple_GetItem(args,9)));
+        static_cast<size_t>(PyLong_AsLong(PyTuple_GetItem(args,7)));
 
-    // argument 10 path to the output files
+    // argument 8 path to the output files
     std::string const rootPathStr =
-        PyString_AsString(PyTuple_GetItem(args, 10));
+        PyString_AsString(PyTuple_GetItem(args, 8));
 
-    // argument 11 print output to the console?
+    // argument 9 print output to the console?
     //http://stackoverflow.com/questions/9316179/what-is-the-correct-way-to-pass-a-boolean-to-a-python-c-extension
     long consoleOutputInt =
-        static_cast<long>(PyInt_AsLong(PyTuple_GetItem(args,11)));
+        static_cast<long>(PyInt_AsLong(PyTuple_GetItem(args,9)));
     bool const consoleOutput = consoleOutputInt == 0? false : true ;
 
-    // argument 12 delimiter of the chain file
+    // argument 10 delimiter of the chain file
     std::string const delimiter =
-        PyString_AsString(PyTuple_GetItem(args, 12));
+        PyString_AsString(PyTuple_GetItem(args, 10));
 
-    // argument 13 precision of the chain file
+    // argument 11 precision of the chain file
     unsigned long const precision =
-        static_cast<unsigned long>(PyInt_AsLong(PyTuple_GetItem(args,13)));
+        static_cast<unsigned long>(PyInt_AsLong(PyTuple_GetItem(args,11)));
 
-    // argument 14 diagonal elelements of the M^-1 matrix
-    PyObject* pyObjKeDiagMInv = PyTuple_GetItem(args, 14);
+    // argument 12 diagonal elelements of the M^-1 matrix
+    PyObject* pyObjKeDiagMInv = PyTuple_GetItem(args, 12);
     PyArrayObject* pyArrObjKeDiagMInv =
         reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(pyObjKeDiagMInv,
         numPyTypeTraits<realScalarType>::getNumPyDType(), NPY_ARRAY_IN_ARRAY));
@@ -197,12 +192,16 @@ static PyObject* canonicalHamiltonianSamplerImpl(PyObject* self, PyObject* args)
         static_cast<realScalarType*>(PyArray_DATA(pyArrObjKeDiagMInv));
     realVectorType  keDiagMInv = make_vector<realScalarType>(pKeDiagMInv,numParams);
 
-    // 4) make the posterior distribution
-    logPosteriorType G(pyObjLogPostFunc,pyObjLogPostDerivs,numParams);
+    // argument 13 the log posterior function
+    PyObject*   pyObjLogPostFunc  = PyTuple_GetItem(args,13);
+
+    // argument 14 the log posterior derivatives
+    PyObject*   pyObjLogPostDerivs  = PyTuple_GetItem(args,14);
 
     std::cout<<"numParams = "<<numParams<<std::endl;
     std::cout<<"maxEps = "<<maxEps<<std::endl;
     std::cout<<"maxNumSteps = "<<maxNumSteps<<std::endl;
+
     for(size_t i=0;i<numParams;++i)
     {
         std::cout<<"startPoint["<<i<<"] = "<<startPoint(i)<<std::endl;
@@ -220,8 +219,11 @@ static PyObject* canonicalHamiltonianSamplerImpl(PyObject* self, PyObject* args)
         std::cout<<"keDiagMInv["<<i<<"] = "<<keDiagMInv(i)<<std::endl;
     }
 
+    // 4) make the posterior distribution
+    logPosteriorType G(pyObjLogPostFunc,pyObjLogPostDerivs,numParams);
+
+
     // 5) define the sampler
-    /*
     samplerType canonHamiltSampler(
         G,
         numParams,
@@ -238,10 +240,9 @@ static PyObject* canonicalHamiltonianSamplerImpl(PyObject* self, PyObject* args)
         precision,
         keDiagMInv
     );
-    */
 
     // 6) finally run the sampler
-    //canonHamiltSampler.run();
+    canonHamiltSampler.run();
 
     return Py_None;
 }

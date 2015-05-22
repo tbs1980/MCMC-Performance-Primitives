@@ -19,7 +19,7 @@ static PyObject* canonicalHamiltonianSampler(PyObject* self, PyObject* args)
     // 1) determine the floating point type from start point
 
     PyArrayObject* pyArrObjStartPoint =
-        (PyArrayObject*) (PyTuple_GetItem(args, 4));
+        (PyArrayObject*) (PyTuple_GetItem(args, 3));
 
     // PyArray_DTYPE new in version 1.7.
     PyArray_Descr * npArrTypeInfo = PyArray_DTYPE(pyArrObjStartPoint);
