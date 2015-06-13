@@ -1,0 +1,3 @@
+useDynLib(cpp_func)
+
+export('cpp_func')

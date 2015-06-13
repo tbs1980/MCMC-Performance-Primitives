@@ -1,0 +1,10 @@
+Package: cppfuncpack
+Type: Package
+Title: Call C++ from R
+Version: 0.0.1
+Date: 2015-05-24
+Author: Sreekumar Thaithara Balan
+Maintainer: Sreekumar Thaithara Balan <sbalan@star.ucl.ac.uk>
+Description: A package illustrating interfacing C++ with R
+License: MPL
+Packaged: 2015-05-24 00:00:00 UTC;

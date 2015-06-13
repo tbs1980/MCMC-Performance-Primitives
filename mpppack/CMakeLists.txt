@@ -1,0 +1,31 @@
+cmake_minimum_required(VERSION 2.8)
+
+#add the customised package searches to the module path
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+find_package(R REQUIRED)
+
+set(DESCRIPTION_FILE_IN "${CMAKE_CURRENT_SOURCE_DIR}/DESCRIPTION")
+set(DESCRIPTION_FILE "${CMAKE_CURRENT_BINARY_DIR}/DESCRIPTION")
+
+set(NAMESPACE_FILE_IN "${CMAKE_CURRENT_SOURCE_DIR}/NAMESPACE")
+set(NAMESPACE_FILE "${CMAKE_CURRENT_BINARY_DIR}/NAMESPACE")
+
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/timestamp")
+
+configure_file(${DESCRIPTION_FILE_IN} ${DESCRIPTION_FILE})
+configure_file(${NAMESPACE_FILE_IN} ${NAMESPACE_FILE})
+
+
+add_custom_command(OUTPUT ${OUTPUT}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_BINARY_DIR}/src
+    COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
+
+add_custom_target(cppR ALL DEPENDS ${OUTPUT})
+
+add_custom_command(TARGET cppR
+COMMAND ${R_COMMAND} CMD build ${CMAKE_CURRENT_BINARY_DIR})
+
+#add_subdirectory(src)
