@@ -217,7 +217,8 @@ namespace mpp { namespace Hamiltonian {
         {
             for(indexType i=0;i<p.rows();++i)
             {
-                p(i) *= sqrt(1./m_mInv(i));
+                //p(i) *= std::sqrt(1./m_mInv(i));
+                p(i) *= m_mInv(i)>0 ? std::sqrt(1./m_mInv(i)) : 0 ;
             }
         }
 
