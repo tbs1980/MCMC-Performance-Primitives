@@ -82,7 +82,91 @@ void testCanonicalHamiltonianSampler()
 
 }
 
+template<typename realScalarType>
+void testCanonicalHamiltonianSamplerZeroMInv()
+{
+    // define a log posterior
+    typedef mpp::utils::GaussPotentialEnergyDiag<realScalarType> logPosteriorType;
+
+    // define the interface for the sampler
+    typedef mpp::canonicalHamiltonianSampler<logPosteriorType> samplerType;
+
+    typedef typename samplerType::realVectorType realVectorType;
+
+    typedef typename logPosteriorType::realDiagMatrixType realDiagMatrixType;
+
+    typedef typename samplerType::seedType seedType;
+
+    // define the diemensionaligy of the problem
+    size_t const numParams = 4;
+
+    // make a Gaussian posterior distribution
+    realVectorType mu = realVectorType::Zero(numParams);
+    realDiagMatrixType sigmaInv = realDiagMatrixType::Ones(numParams);
+    // make the frist dimension zero
+    sigmaInv(0) = 0; // this is not really required, setting mInv=0 will suffice
+
+    logPosteriorType G(mu,sigmaInv);
+
+    // define the step size and the number of steps for the integrator
+    realScalarType const maxEps = 1;
+    size_t const maxNumSteps = 4;
+
+    // define the start point
+    realVectorType startPoint = realVectorType::Random(numParams);
+
+    // define a random number seed
+    seedType randSeed = 0;
+
+    // define the finite samples control
+    size_t const packetSize = 100;
+    size_t const numBurn = 0;
+    size_t const numSamples = 1000;
+    std::string const rootPathStr("./testCanonicalHamiltonianSampler");
+    bool const consoleOutput = true;
+
+    // define IO
+    const std::string delimiter(",");
+    const unsigned int precision = 10;
+
+    // diagonal elements of the mass matrix
+    realDiagMatrixType MInv = realDiagMatrixType::Ones(numParams);
+    //make the first dimension zero
+    // by setting this to zero we are not sampling in this dimension
+    MInv(0) = 0;
+
+    samplerType canonHamiltSampler(
+        G,
+        numParams,
+        maxEps,
+        maxNumSteps,
+        startPoint,
+        randSeed,
+        packetSize,
+        numBurn,
+        numSamples,
+        rootPathStr,
+        consoleOutput,
+        delimiter,
+        precision,
+        MInv
+    );
+
+    // finally run the sampler
+    canonHamiltSampler.run();
+
+}
+
 BOOST_AUTO_TEST_CASE(canonicalHailtonianSampler)
 {
     testCanonicalHamiltonianSampler<float>();
+    testCanonicalHamiltonianSampler<double>();
+    testCanonicalHamiltonianSampler<long double>();
+}
+
+BOOST_AUTO_TEST_CASE(canonicalHailtonianSamplerZeroMInv)
+{
+    testCanonicalHamiltonianSamplerZeroMInv<float>();
+    testCanonicalHamiltonianSamplerZeroMInv<double>();
+    testCanonicalHamiltonianSamplerZeroMInv<long double>();
 }
