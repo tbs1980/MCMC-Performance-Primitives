@@ -81,13 +81,16 @@ namespace mpp { namespace control {
                 "Number of rows in samples should be identical to the packet size");
             size_t n = (size_t) samples.rows();
 
+            realScalarType precAccRate = accRate*100;
+
             // have we finished burning samples
             if(m_samplesBurned >= m_numBurn)
             {
                 m_samplesTaken += n;
                 if(m_consoleOutput)
                 {
-                    BOOST_LOG_TRIVIAL(info) << "Number of samples taken = "<<m_samplesTaken;
+                    BOOST_LOG_TRIVIAL(info) << "Number of samples taken = "<<m_samplesTaken
+                        <<", Acceptance = "<<precAccRate<< "%";
                 }
             }
             else
@@ -95,7 +98,8 @@ namespace mpp { namespace control {
                 m_samplesBurned += n;
                 if(m_consoleOutput)
                 {
-                    BOOST_LOG_TRIVIAL(info) << "Number of samples burned = "<<m_samplesBurned;
+                    BOOST_LOG_TRIVIAL(info) << "Number of samples burned = "<<m_samplesBurned
+                        <<", Acceptance = "<<precAccRate<< "%";
                 }
             }
 
