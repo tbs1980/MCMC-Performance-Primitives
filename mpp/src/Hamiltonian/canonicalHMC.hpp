@@ -97,7 +97,8 @@ namespace mpp{ namespace Hamiltonian{
                 // accept/reject
                 realScalarType dH = h1-h0;
                 u = m_rVGen.uniform();
-                if(u < exp(-dH))
+                //if(u < exp(-dH))
+                if(std::log(u) < -dH)
                 {
                     // copy required stuff
                     m_q0=q0;
