@@ -37,7 +37,7 @@ namespace mpp{ namespace Hamiltonian{
             realVectorType const & startPoint,seedType const seed,
             potEngType & G,kinEngType & K)
         :m_maxEps(maxEps),m_maxNumSteps(maxNumSteps),m_q0(startPoint),
-        m_rVGen(seed),m_G(G),m_K(K),m_accRate(0)
+        m_rVGen(seed),m_G(G),m_K(K),m_accRate(0),mB(1),mLPVal(1)
         {
             BOOST_ASSERT_MSG(maxEps>0 and maxEps <2,"For stability of the leapfrog, we require 0<eps<2");
             BOOST_ASSERT_MSG(maxNumSteps>0 and maxNumSteps < MAX_NUM_STEPS,
@@ -81,7 +81,7 @@ namespace mpp{ namespace Hamiltonian{
                 m_K.rotate(p0);
                 realScalarType valG(0);
                 realScalarType valK(0);
-                m_G.value(q0,valG);
+                m_G.value(q0,valG); //TODO I have already calculated this in the previous interaion
                 m_K.value(p0,valK);
                 realScalarType h0 = -(valG+valK);
 
@@ -98,12 +98,14 @@ namespace mpp{ namespace Hamiltonian{
                 realScalarType dH = h1-h0;
                 u = m_rVGen.uniform();
                 //if(u < exp(-dH))
-                if(std::log(u) < -dH)
+                if(std::log(u) < -dH*mB) // by default temperature is 1
                 {
                     // copy required stuff
-                    m_q0=q0;
+                    m_q0 = q0;
                     samples.row(samp) = m_q0;
                     logPostVals(samp) = valG;
+                    mMHVal = h1;
+                    mLPVal = valG;
                     ++samp;
                 }
                 iter++;
@@ -152,6 +154,31 @@ namespace mpp{ namespace Hamiltonian{
             return (size_t) m_q0.rows();
         }
 
+        inline realScalarType getTempB(void) const
+        {
+            return mB;
+        }
+
+        inline void setTempB(realScalarType const B)
+        {
+            mB = B;
+        }
+
+        inline realScalarType getMHVal(void) const
+        {
+            return mMHVal;
+        }
+
+        inline realScalarType getLogPostVal(void) const
+        {
+            return mLPVal;
+        }
+
+        inline void setLogPostVal(realScalarType logPostVal) const
+        {
+            mLPVal = logPostVal;
+        }
+
     private:
         realScalarType m_maxEps;
         size_t m_maxNumSteps;
@@ -160,6 +187,10 @@ namespace mpp{ namespace Hamiltonian{
         potEngType & m_G;
         kinEngType & m_K;
         realScalarType m_accRate;
+
+        realScalarType mB;
+        realScalarType mMHVal;
+        realScalarType mLPVal;
     };
 
 }//Hamiltonian
