@@ -35,39 +35,41 @@ namespace mpp{ namespace prltemp {
         {
             for(indexType i=0;i<samples.rows();++i)
             {
-                // generate a single sample from all MCMCs
+                // 1) try to generate a single sample from all MCMCs
                 for(size_t j=0;j<mMCMC.size();++j)
                 {
-                    realMatrixType singleSample(1,samples.cols());
-                    realVectorType singleLPVal(1);
-
-                    mMCMC[i].generate(singleSample,singleLPVal);
+                    mMCMC[i].try2Generate();
                 }
 
+                // 2) swap states
                 for(size_t j=0;j<mMCMC.size();++j)
                 {
-                    // generate a uniform random number
+                    // 3) generate a uniform random number
                     realScalarType u = m_rVGen.uniform();
 
+                    // 4) are we swapping?
                     if(u < 0.5)
                     {
                         if(j+1 < mMCMC.size())
                         {
+                            // 5) compute the swapping probability alpha
                             realScalarType lalpha = (mB[j]-mB[j+1])
                                 *(mMCMC[j+1].getMHVal()-mMCMC[j].getMHVal());
+
+                            // 6) accept/reject
                             u = m_rVGen.uniform();
                             if(std::log(u) < lalpha)
                             {
-                                // swap states
-                                realVectorType qj =  mMCMC[j].getStartPoint();
-                                realVectorType qj1 = mMCMC[j+1].getStartPoint();
+                                // 7) swap states
+                                realVectorType qj =  mMCMC[j].getProposal();
+                                realVectorType qj1 = mMCMC[j+1].getProposal();
 
                                 mMCMC[j].setStartPoint(qj1);
                                 mMCMC[j+1].setStartPoint(qj);
 
-                                // swap log posterior values
-                                realScalarType lpj = mMCMC[j].getLogPostVal();
-                                realScalarType lpj1 = mMCMC[j+1].getLogPostVal();
+                                // 8) swap log posterior values
+                                realScalarType lpj = mMCMC[j].getPropLPVal();
+                                realScalarType lpj1 = mMCMC[j+1].getPropLPVal();
 
                                 mMCMC[j].setLogPostVal(lpj);
                                 mMCMC[j+1].setLogPostVal(lpj1);

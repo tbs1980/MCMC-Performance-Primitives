@@ -37,7 +37,8 @@ namespace mpp{ namespace Hamiltonian{
             realVectorType const & startPoint,seedType const seed,
             potEngType & G,kinEngType & K)
         :m_maxEps(maxEps),m_maxNumSteps(maxNumSteps),m_q0(startPoint),
-        m_rVGen(seed),m_G(G),m_K(K),m_accRate(0),mB(1),mLPVal(1)
+        m_rVGen(seed),m_G(G),m_K(K),m_accRate(0),mB(1),mLPVal(1),mProposal(startPoint.rows())
+        mPropLPVal(1)
         {
             BOOST_ASSERT_MSG(maxEps>0 and maxEps <2,"For stability of the leapfrog, we require 0<eps<2");
             BOOST_ASSERT_MSG(maxNumSteps>0 and maxNumSteps < MAX_NUM_STEPS,
@@ -46,6 +47,7 @@ namespace mpp{ namespace Hamiltonian{
                 "potentail and kinetic enegeries should have the same number of dimensions");
         }
 
+        /*
         void generate(realMatrixType & samples,realVectorType & logPostVals)
         {
             BOOST_ASSERT_MSG(samples.rows() == logPostVals.rows(),
@@ -111,6 +113,98 @@ namespace mpp{ namespace Hamiltonian{
                 iter++;
             }
             m_accRate = (realScalarType)samp/(realScalarType)iter;
+        }
+        */
+
+        void generate(realMatrixType & samples,realVectorType & logPostVals)
+        {
+            BOOST_ASSERT_MSG(samples.rows() == logPostVals.rows(),
+                "number of samples should be equal to size of logPostVals");
+            BOOST_ASSERT_MSG(samples.cols() == m_q0.rows(),
+                "number of parameters in the samples does not match the number of parameters in the start point");
+            size_t numSamples = (size_t) samples.rows();
+
+            size_t iter = 0;
+            size_t samp = 0;
+
+            // 1) loop over and generate requested number of samples
+            while(samp < numSamples)
+            {
+                // 2) try to generate a sample
+                bool generated = try2Generate();
+                if(generated)
+                {
+                    // 3) if generated copy the states
+                    samples.row(samp) = m_q0;
+                    logPostVals(samp) = mLPVal;
+
+                    // 4) increase the sample count
+                    ++samp;
+                }
+                // 5) increase the iteration count
+                iter++;
+            }
+
+            // 6) compute the acceptance rate
+            m_accRate = (realScalarType)samp/(realScalarType)iter;
+        }
+
+        bool try2Generate()
+        {
+            size_t numParams = (size_t) m_q0.rows();
+
+            // 1) propose a new (q,p) tuple
+            realVectorType q0(m_q0);
+
+            // 2) randomise the trajectory
+            realScalarType u = m_rVGen.uniform();
+            realScalarType const eps = m_maxEps*u;
+            u = m_rVGen.uniform();
+            size_t const numSteps = (size_t)(u*(realScalarType)m_maxNumSteps);
+
+            // 3) generate a random momentum vector
+            realVectorType p0(numParams);
+            for(size_t i=0;i<numParams;++i)
+            {
+                p0(i) = m_rVGen.normal();
+            }
+
+            // 4) find the Hamiltonian at (q0,p0)
+            m_K.rotate(p0);
+            realScalarType valG(0);
+            realScalarType valK(0);
+            m_G.value(q0,valG); //TODO I have already calculated this in the previous interaion
+            m_K.value(p0,valK);
+            realScalarType h0 = -(valG+valK);
+
+            // 5) integrate the phase space using discretisation
+            integrationPolicy::integrate(eps,numSteps,m_G,m_K,q0,p0);
+
+            // 6) find the Hamiltonian again
+            m_G.value(q0,valG);
+            m_K.value(p0,valK);
+            realScalarType h1 = -(valG+valK);
+
+            // 7) store the current state of the MCMC
+            mProposal = q0;
+            mPropLPVal = valG;
+            mMHVal = h1;
+
+            // 8) accept/reject
+            realScalarType dH = h1-h0;
+            u = m_rVGen.uniform();
+            if(std::log(u) < -dH*mB) // by default temperature is 1
+            {
+                // 9) copy required stuff
+                m_q0 = q0;
+                mLPVal = valG;
+
+                // 10) return scuccess
+                return true;
+            }
+
+            // 11) if not accepted return failure
+            return false;
         }
 
         inline realScalarType getAcceptanceRate(void) const
@@ -179,6 +273,23 @@ namespace mpp{ namespace Hamiltonian{
             mLPVal = logPostVal;
         }
 
+        inline realVectorType getProposal(void) const
+        {
+            return mProposal;
+        }
+
+        inline void setProposal(realVectorType const & proposal)
+        {
+            BOOST_ASSERT_MSG(mProposal.rows() == mProposal.rows(),
+            "Dimensions of input q0 does not agree with the that of m_q0");
+            mProposal = proposal;
+        }
+
+        inline realScalarType getPropLPVal(void) const
+        {
+            return mPropLPVal;
+        }
+
     private:
         realScalarType m_maxEps;
         size_t m_maxNumSteps;
@@ -191,6 +302,8 @@ namespace mpp{ namespace Hamiltonian{
         realScalarType mB;
         realScalarType mMHVal;
         realScalarType mLPVal;
+        realVectorType mProposal;
+        realScalarType mPropLPVal;
     };
 
 }//Hamiltonian
