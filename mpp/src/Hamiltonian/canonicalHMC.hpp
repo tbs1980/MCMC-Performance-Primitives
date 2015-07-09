@@ -214,6 +214,7 @@ namespace mpp{ namespace Hamiltonian{
 
         inline void setSeed(seedType const seed)
         {
+            mSeed = seed;
             m_rVGen.seed(seed);
         }
 
@@ -268,7 +269,7 @@ namespace mpp{ namespace Hamiltonian{
             return mLPVal;
         }
 
-        inline void setLogPostVal(realScalarType logPostVal) const
+        inline void setLogPostVal(realScalarType logPostVal)
         {
             mLPVal = logPostVal;
         }
@@ -290,10 +291,16 @@ namespace mpp{ namespace Hamiltonian{
             return mPropLPVal;
         }
 
+        inline seedType getSeed(void) const
+        {
+            return mSeed;
+        }
+
     private:
         realScalarType m_maxEps;
         size_t m_maxNumSteps;
         realVectorType m_q0;
+        seedType mSeed;
         randVarGenType m_rVGen;
         potEngType & m_G;
         kinEngType & m_K;

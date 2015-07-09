@@ -18,34 +18,41 @@ namespace mpp{ namespace prltemp {
         static const size_t MAX_NUM_STATES = 100;
 
         parallelTemperingMCMC(std::vector<MCMCType> & MCMC)
-        :mB(MCMC.size()),mMCMC(MCMC)
+        :mB(MCMC.size()),mMCMC(MCMC),mRVGen(0),mAccRate(1)
         {
             BOOST_ASSERT_MSG(MCMC.size() <= MAX_NUM_STATES,
                 "For safety a maximum value for number states is set here. Re-compile with higher values.");
             // this can be a policy
             for(size_t i=0;i<mMCMC.size();++i)
             {
-                realScalarType temp = (realScalarType)(i)/(mMCMC.size()-1);
+                realScalarType temp = (realScalarType)(i)/(mMCMC.size());
                 mB(i) = std::pow(0.005,temp);
                 mMCMC[i].setTempB(mB(i));
+                mMCMC[i].setSeed(i);//TODO change this
             }
         }
 
         void generate(realMatrixType & samples,realVectorType & logPostVals)
         {
-            for(indexType i=0;i<samples.rows();++i)
+            size_t numSamples = (size_t) samples.rows();
+
+            size_t iter = 0;
+            size_t samp = 0;
+
+            while(samp < numSamples)
             {
                 // 1) try to generate a single sample from all MCMCs
-                for(size_t j=0;j<mMCMC.size();++j)
+                bool accepted =  mMCMC[0].try2Generate();
+                for(size_t j=1;j<mMCMC.size();++j)
                 {
-                    mMCMC[i].try2Generate();
+                    mMCMC[j].try2Generate();
                 }
 
                 // 2) swap states
                 for(size_t j=0;j<mMCMC.size();++j)
                 {
                     // 3) generate a uniform random number
-                    realScalarType u = m_rVGen.uniform();
+                    realScalarType u = mRVGen.uniform();
 
                     // 4) are we swapping?
                     if(u < 0.5)
@@ -57,7 +64,7 @@ namespace mpp{ namespace prltemp {
                                 *(mMCMC[j+1].getMHVal()-mMCMC[j].getMHVal());
 
                             // 6) accept/reject
-                            u = m_rVGen.uniform();
+                            u = mRVGen.uniform();
                             if(std::log(u) < lalpha)
                             {
                                 // 7) swap states
@@ -73,21 +80,36 @@ namespace mpp{ namespace prltemp {
 
                                 mMCMC[j].setLogPostVal(lpj);
                                 mMCMC[j+1].setLogPostVal(lpj1);
+
                             }
                         }
                     }
                 }
 
                 // finally copy the values form B=1
-                samples.row(i) = mMCMC[0].getStartPoint();
-                logPostVals(i) = mMCMC[0].getLogPostVal();
+                if(accepted)
+                {
+                    samples.row(samp) = mMCMC[0].getStartPoint();
+                    logPostVals(samp) = mMCMC[0].getLogPostVal();
+                    ++samp;
+                }
+
+                ++iter;
             }
+            mAccRate = (realScalarType)samp/(realScalarType)iter;
+
+        }
+
+        inline realScalarType getAcceptanceRate(void) const
+        {
+            return mAccRate;
         }
 
     private:
         realVectorType mB;
         std::vector<MCMCType> & mMCMC;
-        randVarGenType m_rVGen;
+        randVarGenType mRVGen;
+        realScalarType mAccRate;
     };
 
 }//namespace pt
