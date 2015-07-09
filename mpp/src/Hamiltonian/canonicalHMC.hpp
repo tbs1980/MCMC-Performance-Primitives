@@ -37,7 +37,7 @@ namespace mpp{ namespace Hamiltonian{
             realVectorType const & startPoint,seedType const seed,
             potEngType & G,kinEngType & K)
         :m_maxEps(maxEps),m_maxNumSteps(maxNumSteps),m_q0(startPoint),
-        m_rVGen(seed),m_G(G),m_K(K),m_accRate(0),mB(1),mLPVal(1),mProposal(startPoint.rows())
+        m_rVGen(seed),m_G(G),m_K(K),m_accRate(0),mB(1),mLPVal(1),mProposal(startPoint.rows()),
         mPropLPVal(1)
         {
             BOOST_ASSERT_MSG(maxEps>0 and maxEps <2,"For stability of the leapfrog, we require 0<eps<2");

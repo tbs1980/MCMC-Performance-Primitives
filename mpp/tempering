@@ -1,0 +1,6 @@
+#ifndef MPP_TEMPERING
+#define MPP_TEMPERING
+
+#include "src/tempering/parallelTempering.hpp"
+
+#endif //MPP_TEMPERING

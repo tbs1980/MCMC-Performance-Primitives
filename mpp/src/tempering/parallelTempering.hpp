@@ -9,7 +9,7 @@ namespace mpp{ namespace prltemp {
     public:
 
         typedef _MCMCType MCMCType;
-        typedef typename MCMCType::realScalarType;
+        typedef typename MCMCType::realScalarType realScalarType;
         typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realVectorType;
         typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, Eigen::Dynamic> realMatrixType;
         typedef typename MCMCType::randVarGenType randVarGenType;
@@ -20,12 +20,12 @@ namespace mpp{ namespace prltemp {
         parallelTemperingMCMC(std::vector<MCMCType> & MCMC)
         :mB(MCMC.size()),mMCMC(MCMC)
         {
-            BOOST_ASSERT_MSG(numStates <= MAX_NUM_STATES,
+            BOOST_ASSERT_MSG(MCMC.size() <= MAX_NUM_STATES,
                 "For safety a maximum value for number states is set here. Re-compile with higher values.");
             // this can be a policy
             for(size_t i=0;i<mMCMC.size();++i)
             {
-                temp = (realScalarType)(i)/(mMCMC.size()-1);
+                realScalarType temp = (realScalarType)(i)/(mMCMC.size()-1);
                 mB(i) = std::pow(0.005,temp);
                 mMCMC[i].setTempB(mB(i));
             }
