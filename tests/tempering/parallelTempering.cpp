@@ -69,7 +69,8 @@ void testParallelTemperingHMCDim10(void)
     typedef typename potEngType::realMatrixType realMatrixType;
     typedef typename realMatrixType::Index indexType;
     typedef typename rVGenType::seedType seedType;
-    typedef mpp::prltemp::parallelTemperingMCMC<canonicalHMCType> parallelTemperingMCMCType;
+    typedef mpp::prltemp::powerLawTemperature<realScalarType> chainTempType;
+    typedef mpp::prltemp::parallelTemperingMCMC<canonicalHMCType,chainTempType> parallelTemperingMCMCType;
 
     const indexType N = 10;
 
@@ -96,8 +97,9 @@ void testParallelTemperingHMCDim10(void)
 
     std::vector<canonicalHMCType> hmcVect(numChains,canonHMC);
     realScalarType swapRatio = 0.5;
+    chainTempType chainTemps(0.005,numChains);
 
-    parallelTemperingMCMCType paraTempMCMC(hmcVect,swapRatio);
+    parallelTemperingMCMCType paraTempMCMC(hmcVect,swapRatio,chainTemps);
 
     paraTempMCMC.generate(samples,logPostVals);
 
@@ -118,7 +120,8 @@ void testParallelTempering2DRosenbrock(void)
     typedef typename potEngType::realMatrixType realMatrixType;
     typedef typename realMatrixType::Index indexType;
     typedef typename rVGenType::seedType seedType;
-    typedef mpp::prltemp::parallelTemperingMCMC<canonicalHMCType> parallelTemperingMCMCType;
+    typedef mpp::prltemp::powerLawTemperature<realScalarType> chainTempType;
+    typedef mpp::prltemp::parallelTemperingMCMC<canonicalHMCType,chainTempType> parallelTemperingMCMCType;
 
     const indexType N = 2;
 
@@ -149,8 +152,9 @@ void testParallelTempering2DRosenbrock(void)
 
     std::vector<canonicalHMCType> hmcVect(numChains,canonHMC);
     realScalarType swapRatio = 0.5;
+    chainTempType chainTemps(0.005,numChains);
 
-    parallelTemperingMCMCType paraTempMCMC(hmcVect,swapRatio);
+    parallelTemperingMCMCType paraTempMCMC(hmcVect,swapRatio,chainTemps);
 
     paraTempMCMC.generate(samples,logPostVals);
 

@@ -3,34 +3,73 @@
 
 namespace mpp{ namespace prltemp {
 
-    template<class _MCMCType>
+    template<typename _realScalarType>
+    class powerLawTemperature
+    {
+    public:
+        typedef _realScalarType realScalarType;
+
+        static const size_t NUM_MCMC_CHAINS=100;
+
+        powerLawTemperature(realScalarType const fact,size_t const numChains)
+        :mFact(fact),mNumChains(numChains)
+        {
+            BOOST_ASSERT_MSG(fact>0 and fact<1,
+                "The value of power-factor should between 0 and 1.");
+            BOOST_ASSERT_MSG(numChains<=NUM_MCMC_CHAINS,
+                "For safety a maximum value for number states is set here. Re-compile with higher values.");
+        }
+
+        inline realScalarType value(size_t i) const
+        {
+            BOOST_ASSERT(i>=0 and i<mNumChains);
+            realScalarType temp = (realScalarType)i / (realScalarType)mNumChains;
+            return std::pow(mFact,temp);
+        }
+
+        inline size_t numChains(void) const
+        {
+            return mNumChains;
+        }
+    private:
+        realScalarType mFact;
+        size_t mNumChains;
+    };
+
+    template<class _MCMCType,class _chainTempType>
     class parallelTemperingMCMC
     {
     public:
 
         typedef _MCMCType MCMCType;
+        typedef _chainTempType chainTempType;
         typedef typename MCMCType::realScalarType realScalarType;
+        typedef typename chainTempType::realScalarType realScalarTypeChain;
         typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realVectorType;
         typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, Eigen::Dynamic> realMatrixType;
         typedef typename MCMCType::randVarGenType randVarGenType;
         typedef typename realVectorType::Index indexType;
 
+        static_assert(std::is_same<realScalarType,realScalarTypeChain>::value,
+            "MCMC AND CHAIN-TEMPERATURE SHOULD SHOULD HAVE THE SAME FLOATING POINT TYPE");
+
         static const size_t MAX_NUM_STATES = 100;
 
-        parallelTemperingMCMC(std::vector<MCMCType> & MCMC,realScalarType const swapRatio)
-        :mB(MCMC.size()),mMCMC(MCMC),mSwapRatio(swapRatio),mRVGen(0),mAccRate(1)
+        parallelTemperingMCMC(std::vector<MCMCType> & MCMC,realScalarType const swapRatio,chainTempType const & chainTemps)
+        :mB(MCMC.size()),mMCMC(MCMC),mSwapRatio(swapRatio),mChainTemps(chainTemps),mRVGen(0),mAccRate(1)
         {
             BOOST_ASSERT_MSG(MCMC.size() <= MAX_NUM_STATES,
                 "For safety a maximum value for number states is set here. Re-compile with higher values.");
             BOOST_ASSERT_MSG(swapRatio>0 and swapRatio<=1,
                 "Swap-ratio should be a real number btween 0 and 1.");
-            // this can be a policy
+            BOOST_ASSERT_MSG(mMCMC.size() == mChainTemps.numChains(),
+                "Number of chains in MCMC does not match the number of chains in chain-temperatures.");
+
             for(size_t i=0;i<mMCMC.size();++i)
             {
-                realScalarType temp = (realScalarType)(i)/(mMCMC.size());
-                mB(i) = std::pow(0.005,temp);
+                mB(i) = chainTemps.value(i);
                 mMCMC[i].setTempB(mB(i));
-                mMCMC[i].setSeed(i);//TODO change this
+                mMCMC[i].setSeed(i);
             }
 
             mNumParams = mMCMC[0].numParams();
@@ -149,6 +188,7 @@ namespace mpp{ namespace prltemp {
         realVectorType mB;
         std::vector<MCMCType> & mMCMC;
         realScalarType mSwapRatio;
+        chainTempType mChainTemps;
         randVarGenType mRVGen;
         realScalarType mAccRate;
         std::vector<realMatrixType> mSamples;
