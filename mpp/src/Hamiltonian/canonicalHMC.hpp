@@ -47,7 +47,6 @@ namespace mpp{ namespace Hamiltonian{
                 "potentail and kinetic enegeries should have the same number of dimensions");
         }
 
-        /*
         void generate(realMatrixType & samples,realVectorType & logPostVals)
         {
             BOOST_ASSERT_MSG(samples.rows() == logPostVals.rows(),
@@ -63,23 +62,23 @@ namespace mpp{ namespace Hamiltonian{
             // loop over and generate requested number of samples
             while(samp < numSamples)
             {
-                // propose a new (q,p) tuple
+                // 1) propose a new (q,p) tuple
                 realVectorType q0(m_q0);
 
-                // randomise the trajectory
+                // 2) randomise the trajectory
                 realScalarType u = m_rVGen.uniform();
                 const realScalarType eps = m_maxEps*u;
                 u = m_rVGen.uniform();
                 const size_t numSteps = (size_t)(u*(realScalarType)m_maxNumSteps);
 
-                // generate a random momentum vector
+                // 3) generate a random momentum vector
                 realVectorType p0(numParams);
                 for(size_t i=0;i<numParams;++i)
                 {
                     p0(i) = m_rVGen.normal();
                 }
 
-                // find the Hamiltonian at (q0,p0)
+                // 4) find the Hamiltonian at (q0,p0)
                 m_K.rotate(p0);
                 realScalarType valG(0);
                 realScalarType valK(0);
@@ -87,35 +86,36 @@ namespace mpp{ namespace Hamiltonian{
                 m_K.value(p0,valK);
                 realScalarType h0 = -(valG+valK);
 
-                // integrate the phase space using discretisation
+                // 5) integrate the phase space using discretisation
                 integrationPolicy::integrate(eps,numSteps,m_G,m_K,q0,p0);
-                //leapfrogIntegratorPolicy::integrate<potEngType,kinEngType>(eps,nSteps,G,K,q,p);
 
-                // find the Hamiltonian again
+                // 6) find the Hamiltonian again
                 m_G.value(q0,valG);
                 m_K.value(p0,valK);
                 realScalarType h1 = -(valG+valK);
 
-                // accept/reject
+                // 7) store the current state of the MCMC
+                mProposal = q0;
+                mPropLPVal = valG;
+                mMHVal = h1;
+
+                // 8) accept/reject
                 realScalarType dH = h1-h0;
                 u = m_rVGen.uniform();
-                //if(u < exp(-dH))
                 if(std::log(u) < -dH*mB) // by default temperature is 1
                 {
-                    // copy required stuff
+                    // 9) copy required stuff
                     m_q0 = q0;
                     samples.row(samp) = m_q0;
                     logPostVals(samp) = valG;
-                    mMHVal = h1;
-                    mLPVal = valG;
                     ++samp;
                 }
                 iter++;
             }
             m_accRate = (realScalarType)samp/(realScalarType)iter;
         }
-        */
 
+        /*
         void generate(realMatrixType & samples,realVectorType & logPostVals)
         {
             BOOST_ASSERT_MSG(samples.rows() == logPostVals.rows(),
@@ -148,7 +148,7 @@ namespace mpp{ namespace Hamiltonian{
             // 6) compute the acceptance rate
             m_accRate = (realScalarType)samp/(realScalarType)iter;
         }
-
+        */
         bool try2Generate()
         {
             size_t numParams = (size_t) m_q0.rows();

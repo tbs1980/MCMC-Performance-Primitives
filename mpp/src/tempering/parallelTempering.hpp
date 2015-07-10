@@ -36,16 +36,20 @@ namespace mpp{ namespace prltemp {
         {
             size_t numSamples = (size_t) samples.rows();
 
-            size_t iter = 0;
-            size_t samp = 0;
+            realScalarType accRate = 0.;
 
-            while(samp < numSamples)
+            for(size_t i=0;i<numSamples;++i)
             {
+                realMatrixType singleSample(1,samples.cols());
+                realVectorType singleLogPostVal(1);
+
                 // 1) try to generate a single sample from all MCMCs
-                bool accepted =  mMCMC[0].try2Generate();
+                mMCMC[0].generate(singleSample,singleLogPostVal);
+                accRate += mMCMC[0].getAcceptanceRate();
+
                 for(size_t j=1;j<mMCMC.size();++j)
                 {
-                    mMCMC[j].try2Generate();
+                    mMCMC[j].generate(singleSample,singleLogPostVal);
                 }
 
                 // 2) swap states
@@ -80,23 +84,15 @@ namespace mpp{ namespace prltemp {
 
                                 mMCMC[j].setLogPostVal(lpj);
                                 mMCMC[j+1].setLogPostVal(lpj1);
-
                             }
                         }
                     }
                 }
 
-                // finally copy the values form B=1
-                if(accepted)
-                {
-                    samples.row(samp) = mMCMC[0].getStartPoint();
-                    logPostVals(samp) = mMCMC[0].getLogPostVal();
-                    ++samp;
-                }
-
-                ++iter;
+                samples.row(i) = mMCMC[0].getStartPoint();
+                logPostVals(i) = mMCMC[0].getLogPostVal();
             }
-            mAccRate = (realScalarType)samp/(realScalarType)iter;
+            mAccRate = accRate/(realScalarType)numSamples;
 
         }
 

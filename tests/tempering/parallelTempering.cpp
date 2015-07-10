@@ -10,110 +10,51 @@
 #include <mpp/Hamiltonian>
 #include <mpp/tempering>
 
+//http://en.wikipedia.org/wiki/Rosenbrock_function
+
+//define the Rosenbrock density in 2D
 template<typename _realScalarType>
-class Gauss2D4Blobs
+class Rosenbrock
 {
 public:
-    // http://www.lindonslog.com/example_code/tempering.cpp
-
-    typedef _realScalarType realScalarType; /* THIS DEFINITION IS REQUIRED */
+    typedef _realScalarType realScalarType;
     typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realVectorType;
-    typedef Eigen::Matrix<double, Eigen::Dynamic, 1> realDiagMatrixType;
+    typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realDiagMatrixType;
+    typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, Eigen::Dynamic> realMatrixType;
+    typedef typename realVectorType::Index indexType;
 
-    Gauss2D4Blobs()
+    Rosenbrock(realScalarType a=1,realScalarType b=100)
+    :mA(a),mB(b)
     {
-        mu1 = realVectorType::Ones(2)*-2.;
-        mu2 = realVectorType::Ones(2)*2.;
-        sigmaInv1 = realVectorType::Ones(2)*30.;
-        sigmaInv2 = realVectorType::Ones(2)*30.;
+
     }
 
-    void value(realVectorType const & q, double & val)
+    void value(realVectorType const & q, double & val) const
     {
-        BOOST_ASSERT_MSG(q.rows()==2,"This posterior distribution is 2D only");
+        BOOST_ASSERT(q.rows()==2);
 
-        /*
-        realScalarType t1 = q(0);
-        realScalarType t2 = q(1);
-
-        realScalarType sigma2=0.001;
-        realScalarType lik = std::exp(-(1/(2*sigma2))*((t1-1)*(t1-1) + (t2-1)*(t2-1) ))
-            + std::exp(-(1/(2*sigma2))*((t1-0)*(t1-0) + (t2-0)*(t2-0) ))
-            + std::exp(-(1/(2*sigma2))*((t1-1)*(t1-1) + (t2+1)*(t2+1) ))
-            + std::exp(-(1/(2*sigma2))*((t1+1)*(t1+1) + (t2-1)*(t2-1) ))
-            + std::exp(-(1/(2*sigma2))*((t1+1)*(t1+1) + (t2+1)*(t2+1) ));
-
-        //sigma2=1000;
-        //realScalarType prior =  std::exp((-1/(2*sigma2))*(t1*t1+t2*t2));
-
-        val = std::log(lik) ;//+ std::log(prior);
-        */
-
-
-        val = std::exp(-0.5*(mu1-q).transpose()*sigmaInv1.cwiseProduct(mu1-q))
-            + std::exp(-0.5*(mu2-q).transpose()*sigmaInv2.cwiseProduct(mu2-q));
-        val = std::log(val);
+        val = -( mA-q(0) )*( mA-q(0) ) - mB*( q(1)-q(0)*q(0) )*( q(1)-q(0)*q(0) );
     }
 
     void derivs(realVectorType const & q,realVectorType & dq) const
     {
-        realScalarType p = std::exp(-0.5*(mu1-q).transpose()*sigmaInv1.cwiseProduct(mu1-q))
-            + std::exp(-0.5*(mu2-q).transpose()*sigmaInv2.cwiseProduct(mu2-q));
+        BOOST_ASSERT(q.rows()==2);
+        BOOST_ASSERT(dq.rows()==2);
+
+        dq(0) = 2*( mA-q(0) ) + 4*mB*q(0)*( q(1)-q(0)*q(0) );
+        dq(1) = -2*mB*( q(1) - q(0)*q(0) );
+
+    }
+
+    inline indexType numDims() const
+    {
+        return indexType(2);
     }
 
 private:
-    realVectorType mu1;
-    realVectorType mu2;
-    realDiagMatrixType sigmaInv1;
-    realDiagMatrixType sigmaInv2;
-
+    realScalarType mA;
+    realScalarType mB;
 };
-
-template<typename realScalarType>
-void makePlotData(void)
-{
-    typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realVectorType;
-    typedef typename realVectorType::Index indexType;
-
-    Gauss2D4Blobs<realScalarType> logPost;
-
-    realScalarType t1Min = -5;
-    realScalarType t1Max = 5;
-    realScalarType t2Min = -5;
-    realScalarType t2Max = 5;
-
-    indexType numSteps = 200;
-
-    realScalarType dt1 = (t1Max - t1Min)/(realScalarType) numSteps;
-    realScalarType dt2 = (t2Max - t2Min)/(realScalarType) numSteps;
-
-    std::ofstream fileOut;
-    fileOut.open("./plot2d4Blob.dat",std::ios::trunc);
-
-    for(indexType i=0;i<numSteps;++i)
-    {
-        realScalarType t1i = t1Min + i*dt1;
-        for(indexType j=0;j<numSteps;++j)
-        {
-            realScalarType t2i = t2Min + j*dt2;
-            realVectorType q(2);
-            q(0) = t1i;
-            q(1) = t2i;
-            realScalarType val=0;
-            logPost.value(q,val);
-            fileOut<<t1i<<"\t"<<t2i<<"\t"<<val<<std::endl;
-        }
-        fileOut<<std::endl;
-    }
-
-    fileOut.close();
-}
-
-template<typename realScalarType>
-void testTestParallelTempering2D4BlobGauss(void)
-{
-
-}
 
 template<typename realScalarType>
 void testParallelTemperingHMCDim10(void)
@@ -160,11 +101,69 @@ void testParallelTemperingHMCDim10(void)
     BOOST_REQUIRE(0.91 < paraTempMCMC.getAcceptanceRate() and paraTempMCMC.getAcceptanceRate() < 0.95);
 }
 
+template<typename realScalarType>
+void testParallelTempering2DRosenbrock(void)
+{
+    typedef Rosenbrock<realScalarType> potEngType;
+    typedef mpp::Hamiltonian::GaussKineticEnergy<realScalarType> kinEngType;
+    typedef mpp::utils::randomSTD<realScalarType> rVGenType;
+    typedef mpp::Hamiltonian::leapfrog leapfrogIntegratorPolicy;
+    typedef mpp::Hamiltonian::canonicalHMC<rVGenType,potEngType,kinEngType,
+        leapfrogIntegratorPolicy> canonicalHMCType;
+    typedef typename potEngType::realVectorType realVectorType;
+    typedef typename potEngType::realMatrixType realMatrixType;
+    typedef typename realMatrixType::Index indexType;
+    typedef typename rVGenType::seedType seedType;
+    typedef mpp::prltemp::parallelTemperingMCMC<canonicalHMCType> parallelTemperingMCMCType;
 
+    const indexType N = 2;
+
+    realScalarType a = 1;
+    realScalarType b =100;
+
+    realVectorType mu = realVectorType::Zero(N);
+    realMatrixType sigmaInv = realMatrixType::Identity(N,N);
+    realMatrixType mInv = realMatrixType::Identity(N,N)*2.5e-3;
+    realVectorType q0 = realVectorType::Random(N);
+
+
+    const realScalarType maxEps = 1;
+    const indexType maxNumsteps = 10;
+
+    potEngType G(a,b);
+    kinEngType K(mInv);
+
+
+    seedType seed = 0;
+
+    const indexType numsamples = 5000;
+    realMatrixType samples(numsamples,N);
+    realVectorType logPostVals = realVectorType::Zero(numsamples);
+
+    canonicalHMCType canonHMC(maxEps,maxNumsteps,q0,seed,G,K);
+
+    std::vector<canonicalHMCType> hmcVect(1,canonHMC);
+
+    parallelTemperingMCMCType paraTempMCMC(hmcVect);
+
+    paraTempMCMC.generate(samples,logPostVals);
+
+    std::cout<<"acceptance rate = "<<paraTempMCMC.getAcceptanceRate()<<std::endl;
+
+    std::ofstream outFile;
+    outFile.open("./rosenbrock.dat",std::ios::trunc);
+    outFile<<samples;
+    outFile.close();
+}
+
+/*
 BOOST_AUTO_TEST_CASE(parallelTempering2D4BlobGauss)
 {
-    //makePlotData<double>();
-    //testTestParallelTempering2D4BlobGauss<double>();
-
     testParallelTemperingHMCDim10<double>();
+}
+*/
+
+BOOST_AUTO_TEST_CASE(parallelTempering2DRosenbrock)
+{
+    testParallelTempering2DRosenbrock<double>();
 }
