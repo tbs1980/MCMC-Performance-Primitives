@@ -32,21 +32,22 @@ namespace mpp{ namespace prltemp {
             }
         }
 
-        void generate(realMatrixType & samples,realVectorType & logPostVals)
+        //void generate(realMatrixType & samples,realVectorType & logPostVals)
+        void generate(std::vector<realMatrixType> & samples,
+            std::vector<realVectorType> & logPostVals)
         {
-            size_t numSamples = (size_t) samples.rows();
+            size_t numSamples = (size_t) logPostVals[0].rows();
 
             realScalarType accRate = 0.;
 
             for(size_t i=0;i<numSamples;++i)
             {
-                realMatrixType singleSample(1,samples.cols());
+                realMatrixType singleSample(1,samples[0].cols());
                 realVectorType singleLogPostVal(1);
 
                 // 1) try to generate a single sample from all MCMCs
                 mMCMC[0].generate(singleSample,singleLogPostVal);
                 accRate += mMCMC[0].getAcceptanceRate();
-
                 for(size_t j=1;j<mMCMC.size();++j)
                 {
                     mMCMC[j].generate(singleSample,singleLogPostVal);
@@ -89,8 +90,11 @@ namespace mpp{ namespace prltemp {
                     }
                 }
 
-                samples.row(i) = mMCMC[0].getStartPoint();
-                logPostVals(i) = mMCMC[0].getLogPostVal();
+                for(size_t j=0;j<mMCMC.size();++j)
+                {
+                    samples[j].row(i) = mMCMC[j].getStartPoint();
+                    logPostVals[j](i) = mMCMC[j].getLogPostVal();
+                }
             }
             mAccRate = accRate/(realScalarType)numSamples;
 

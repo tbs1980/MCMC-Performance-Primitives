@@ -136,13 +136,18 @@ void testParallelTempering2DRosenbrock(void)
 
     seedType seed = 0;
 
-    const indexType numsamples = 5000;
-    realMatrixType samples(numsamples,N);
-    realVectorType logPostVals = realVectorType::Zero(numsamples);
+    const indexType numsamples = 1000;
+    realMatrixType samplesSingleChain(numsamples,N);
+    realVectorType logPostValsSingleChain = realVectorType::Zero(numsamples);
 
     canonicalHMCType canonHMC(maxEps,maxNumsteps,q0,seed,G,K);
 
-    std::vector<canonicalHMCType> hmcVect(1,canonHMC);
+
+    size_t const numChains = 8;
+
+    std::vector<canonicalHMCType> hmcVect(numChains,canonHMC);
+    std::vector<realMatrixType> samples(numChains,samplesSingleChain);
+    std::vector<realVectorType> logPostVals(numChains,logPostValsSingleChain);
 
     parallelTemperingMCMCType paraTempMCMC(hmcVect);
 
@@ -151,8 +156,8 @@ void testParallelTempering2DRosenbrock(void)
     std::cout<<"acceptance rate = "<<paraTempMCMC.getAcceptanceRate()<<std::endl;
 
     std::ofstream outFile;
-    outFile.open("./rosenbrock.dat",std::ios::trunc);
-    outFile<<samples;
+    outFile.open("./rosenbrock4.dat",std::ios::trunc);
+    outFile<<samples[4];
     outFile.close();
 }
 
