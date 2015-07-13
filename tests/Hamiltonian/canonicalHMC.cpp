@@ -41,8 +41,9 @@ void testCanonicalHMCDim10(void)
     const indexType numsamples = 1000;
     realMatrixType samples(numsamples,N);
     realVectorType logPostVals = realVectorType::Zero(numsamples);
+    rVGenType rvGen(seed);
 
-    canonicalHMCType canonHMC(maxEps,maxNumsteps,q0,seed,G,K);
+    canonicalHMCType canonHMC(maxEps,maxNumsteps,q0,rvGen,G,K);
     canonHMC.generate(samples,logPostVals);
 
     BOOST_REQUIRE(0.91 < canonHMC.getAcceptanceRate() and canonHMC.getAcceptanceRate() < 0.95);

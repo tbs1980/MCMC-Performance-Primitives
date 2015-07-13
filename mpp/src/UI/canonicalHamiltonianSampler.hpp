@@ -144,7 +144,8 @@ namespace mpp
             realVectorType const & keDiagMInv
         )
         :mLogPost(logPost),mNumParams(numParams),mMaxEps(maxEps)
-        ,mMaxNumSteps(maxNumSteps),mStartPoint(startPoint)  ,mRandSeed(randSeed)
+        ,mMaxNumSteps(maxNumSteps),mStartPoint(startPoint),mRVGen(randSeed)
+        //mRandSeed(randSeed)
         ,mPacketSize(packetSize),mNumBurn(numBurn),mNumSamples(numSamples)
         ,mRootPathStr(rootPathStr),mConsoleOutput(consoleOutput)
         ,mDelimiter(delimiter),mPrecision(precision),mKeDiagMInv(keDiagMInv)
@@ -218,7 +219,7 @@ namespace mpp
             kinEngType K(mKeDiagMInv);
 
             // define the Hamiltonian Monte Carlo
-            canonicalHMCType canonHMC(mMaxEps,mMaxNumSteps,mStartPoint,mRandSeed,mLogPost,K);
+            canonicalHMCType canonHMC(mMaxEps,mMaxNumSteps,mStartPoint,mRVGen,mLogPost,K);
 
             // get the current random number state for control
             std::string randState = canonHMC.getRandState();
@@ -242,7 +243,8 @@ namespace mpp
         realScalarType mMaxEps;/**< value of the epsilon of leapfrog */
         size_t mMaxNumSteps;/**< maximum number steps in the leapfrog */
         realVectorType const & mStartPoint;/**< staring point of the sampler */
-        size_t mRandSeed;/**< random number seed */
+        //size_t mRandSeed;/**< random number seed */
+        rVGenType mRVGen;/**< random variate generator*/
         size_t mPacketSize;/**< number samples to be geerated in one go of HMC */
         size_t mNumBurn;/**< number of samples to be burned */
         size_t mNumSamples;/**< number of samples to be taken after burning */
