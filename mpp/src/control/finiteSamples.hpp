@@ -3,22 +3,70 @@
 
 namespace mpp { namespace control {
 
+    /**
+     * \class finiteSamplesControl
+     *
+     * \tparam _realScalarType real floating point type
+     *
+     * \brief A class for controlling the sampler
+     *
+     * This class controlls the behaviour of the sampler, i.e. it stops the sampling
+     * process after a finite number samples are taken. It also dumps the state of
+     * the MCMC to a resume file every a dump function is called. Once the required
+     * number of sampels are generated, this class renames the chain file by prepending
+     * it with a time-stamp.
+     */
     template<typename _realScalarType>
     class finiteSamplesControl
     {
+        /**
+         * \brief serialization of the data
+         * \relates  boost::serialization::access
+         */
         friend class boost::serialization::access;
     public:
+
+        /**
+         * \typedef _realScalarType realScalarType
+         * \brief real floating point type
+         */
         typedef _realScalarType realScalarType;
+
+        /**
+         * \typedef typename Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realVectorType
+         * \brief real floating point vector type
+         */
         typedef typename Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realVectorType;
+
+        /**
+         * \typedef typename Eigen::Matrix<realScalarType, Eigen::Dynamic, Eigen::Dynamic> realMatrixType
+         * \brief real floating point vector type
+         */
         typedef typename Eigen::Matrix<realScalarType, Eigen::Dynamic, Eigen::Dynamic> realMatrixType;
 
         static_assert(std::is_floating_point<realScalarType>::value,
             "PARAMETER SHOULD BE A FLOATING POINT TYPE");
 
-        finiteSamplesControl(size_t const numParams, size_t const packetSize,
-            size_t const numBurn, size_t const numSamples,
-            std::string const& rootPathStr, bool const consoleOutput,
-            realVectorType const & startPoint, std::string const& randState)
+        /**
+         * \brief A constructor that sets up the controller
+         *
+         * \param numParams number of parameters in the log-posterior
+         * \param packetSize packet-size for sampling
+         * \param numBurn number of samples to be burned
+         * \param numSamples number of samples to taken after burning
+         * \param rootPathStr path-prefix to output files
+         * \param consoleOutput a flag for controlling output to console
+         * \param startPoint a start point for MCMC chains
+         * \param randState state of the random number generator
+         */
+        finiteSamplesControl(size_t const numParams,
+            size_t const packetSize,
+            size_t const numBurn,
+            size_t const numSamples,
+            std::string const& rootPathStr,
+            bool const consoleOutput,
+            realVectorType const & startPoint,
+            std::string const& randState)
         :m_numParams(numParams), m_packetSize(packetSize),m_numBurn(numBurn),
             m_numSamples(numSamples), m_rootPathStr(rootPathStr),
             m_consoleOutput(consoleOutput), m_samplesTaken(0),
@@ -74,6 +122,19 @@ namespace mpp { namespace control {
             }
         }
 
+        /**
+         * \brief A function that dumps the current state of MCMC
+         * @param samples   current pack of samples
+         * @param accRate   current acceptance rate
+         * @param randState current random number generator state
+         *
+         * This function is called every packet-size iterations. In other words,
+         * every time we have samples the packet of samples, this function is called
+         * to dump information. It also checks for the number of samples taken, and if
+         * the specified number of samples are genrated, a flag for stopping the
+         * sampler is set. The current state of the sampler is written to the disk
+         * ever time this function is callled.
+         */
         void dump(realMatrixType const & samples,realScalarType const accRate,
             std::string const& randState)
         {
@@ -134,11 +195,19 @@ namespace mpp { namespace control {
             }
         }
 
+        /**
+         * \brief A function that returns the name of chain file.
+         * @return the name of chain fil
+         */
         std::string const & getChainFileName() const
         {
             return m_chainOutFileName;
         }
 
+        /**
+         * \brief A function that returns the start-point of the MCMC
+         * @return the start-point of the MCMC
+         */
         realVectorType getStartPoint() const
         {
             realVectorType q0(m_numParams);
@@ -149,21 +218,37 @@ namespace mpp { namespace control {
             return q0;
         }
 
+        /**
+         * \brief A function that retunrs the random number generator state
+         * @return the random number generator state
+         */
         std::string const& getRandState() const
         {
             return m_randState;
         }
 
+        /**
+         * \brief A function that returns the number of parameters in the log-posterior
+         * @return the number of parameters in the log-posterior
+         */
         size_t numParams() const
         {
             return m_numParams;
         }
 
+        /**
+         * \brief A function that returns false when the required number of samples are taken
+         * @return false when the required number of samples are taken, otherwise true
+         */
         bool continueSampling() const
         {
             return m_continueSampling;
         }
 
+        /**
+         * \brief A function that returns the packet-size of the sampling process
+         * @return returns the packet-size of the sampling process
+         */
         size_t packetSize() const
         {
             return m_packetSize;
@@ -171,6 +256,9 @@ namespace mpp { namespace control {
 
     private:
 
+        /**
+         * \brief A function that renames the chain file upon taking the required number of samples
+         */
         void renameChainFile(void)
         {
 
@@ -194,6 +282,12 @@ namespace mpp { namespace control {
 
         }
 
+        /**
+         * \breif A function for serializing the data
+         * \tparam Archive the archive type
+         * \param ar the archive
+         * \param version version number
+         */
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version)
         {
@@ -216,24 +310,24 @@ namespace mpp { namespace control {
             }
         }
 
-        size_t m_numParams;
-        size_t m_packetSize;
-        size_t m_numBurn;
-        size_t m_numSamples;
-        std::string m_rootPathStr;
-        bool m_consoleOutput;
+        size_t m_numParams; /**< number of parameters in the log-posterior */
+        size_t m_packetSize; /**< packet-size of the sampling process */
+        size_t m_numBurn; /**< number of samples to be burned */
+        size_t m_numSamples; /**< number of samples to be taken after burning */
+        std::string m_rootPathStr; /**< path to output files */
+        bool m_consoleOutput; /**< a flag for controlling the console output */
 
-        size_t m_samplesTaken;
-        size_t m_samplesBurned;
+        size_t m_samplesTaken; /**< samples taken so far */
+        size_t m_samplesBurned; /**< samples burned so far */
 
-        bool m_continueSampling;
+        bool m_continueSampling; /**< continue sampling or not? */
 
-        std::vector<realScalarType> m_startPoint;
-        std::string m_randState;
-        realScalarType m_accRate;
+        std::vector<realScalarType> m_startPoint; /**< start-point of the MCMC */
+        std::string m_randState; /**< current random number state */
+        realScalarType m_accRate; /**< current acceptance rate */
 
-        std::string m_archiveOutFileName;
-        std::string m_chainOutFileName;
+        std::string m_archiveOutFileName; /**< ouput file name of the archive */
+        std::string m_chainOutFileName; /**< ouput file name of the MCMC chains */
     };
 
 }//namespace control
