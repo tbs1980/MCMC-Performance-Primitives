@@ -90,8 +90,9 @@ void testParallelTemperingHMCDim10(void)
     const indexType numsamples = 1000;
     realMatrixType samples(numsamples,N);
     realVectorType logPostVals = realVectorType::Zero(numsamples);
+    rVGenType rvGen(seed);
 
-    canonicalHMCType canonHMC(maxEps,maxNumsteps,q0,seed,G,K);
+    canonicalHMCType canonHMC(maxEps,maxNumsteps,q0,rvGen,G,K);
 
     size_t const numChains = 8;
 
@@ -145,8 +146,9 @@ void testParallelTempering2DRosenbrock(void)
     const indexType numsamples = 1000;
     realMatrixType samples(numsamples,N);
     realVectorType logPostVals = realVectorType::Zero(numsamples);
+    rVGenType rvGen(seed);
 
-    canonicalHMCType canonHMC(maxEps,maxNumsteps,q0,seed,G,K);
+    canonicalHMCType canonHMC(maxEps,maxNumsteps,q0,rvGen,G,K);
 
     size_t const numChains = 8;
 
@@ -159,7 +161,7 @@ void testParallelTempering2DRosenbrock(void)
     paraTempMCMC.generate(samples,logPostVals);
 
 
-    BOOST_REQUIRE(0.97 < paraTempMCMC.getAcceptanceRate() and paraTempMCMC.getAcceptanceRate() < 0.999);
+    BOOST_REQUIRE(0.96 < paraTempMCMC.getAcceptanceRate() and paraTempMCMC.getAcceptanceRate() < 0.98);
 
     /*
     std::cout<<"acceptance rate = "<<paraTempMCMC.getAcceptanceRate()<<std::endl;

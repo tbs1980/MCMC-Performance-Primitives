@@ -69,7 +69,6 @@ namespace mpp{ namespace prltemp {
             {
                 mB(i) = chainTemps.value(i);
                 mMCMC[i].setTempB(mB(i));
-                mMCMC[i].setSeed(i);
             }
 
             mNumParams = mMCMC[0].numParams();
@@ -80,7 +79,7 @@ namespace mpp{ namespace prltemp {
         {
             BOOST_ASSERT_MSG(samples.rows() == logPostVals.rows(),
                 "number of samples should be equal to size of logPostVals");
-            BOOST_ASSERT_MSG(samples.cols() == mNumParams,
+            BOOST_ASSERT_MSG((size_t) samples.cols() == mNumParams,
                 "number of parameters in the samples does not match the number of parameters in the start point");
 
             size_t numSamples = (size_t) samples.rows();
