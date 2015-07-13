@@ -96,8 +96,29 @@ namespace mpp { namespace control {
                 //now load the information from the resume file
                 std::ifstream ifs(m_archiveOutFileName);
                 boost::archive::binary_iarchive ia(ifs);
-                ia >> (*this);
+                try
+                {
+                    ia >> (*this);
+                }
+                catch(std::exception & e)
+                {
+                    BOOST_LOG_TRIVIAL(fatal) << "Resume data cannot be read. No sampling will be perfomred.";
+                    m_continueSampling = false;
+                }
+
                 ifs.close();
+
+                if(m_continueSampling)// we read the resume data properly
+                {
+                    // perform sanity checks before moving forward
+                    bool verified = verifyResumeData(numParams,packetSize,numBurn,
+                        numSamples,consoleOutput);
+                    if(verified == false)
+                    {
+                        BOOST_LOG_TRIVIAL(fatal) << "No sampling will be perfomred.";
+                    }
+                }
+
             }
             else
             {
@@ -304,10 +325,54 @@ namespace mpp { namespace control {
             //ar & m_accRate;
             ar & m_randState;
 
-            if(version >= 0)
+            if(version == 0)
             {
                 ar & m_accRate;
             }
+        }
+
+        bool verifyResumeData(size_t const numParams,
+            size_t const packetSize,
+            size_t const numBurn,
+            size_t const numSamples,
+            bool const consoleOutput)
+        {
+            if(numParams != m_numParams)
+            {
+                BOOST_LOG_TRIVIAL(fatal) << "The input number of parameters does not match the the resume data.";
+                m_continueSampling = false;
+                return false;
+            }
+
+            if(packetSize != m_packetSize)
+            {
+                BOOST_LOG_TRIVIAL(fatal) << "The input packet-size does not match the data from the resume data.";
+                m_continueSampling = false;
+                return false;
+            }
+
+            if(numBurn != m_numBurn)
+            {
+                BOOST_LOG_TRIVIAL(fatal) << "The input number of samples to be bunred does not match the resume data.";
+                m_continueSampling = false;
+                return false;
+            }
+
+            if(numSamples != m_numSamples)
+            {
+                BOOST_LOG_TRIVIAL(fatal) << "The input number of samples to be taken does not match the resume data.";
+                m_continueSampling = false;
+                return false;
+            }
+
+            if(consoleOutput != m_consoleOutput)
+            {
+                BOOST_LOG_TRIVIAL(fatal) << "The console-output flag does does not match the resume data.";
+                m_continueSampling = false;
+                return false;
+            }
+
+            return true;
         }
 
         size_t m_numParams; /**< number of parameters in the log-posterior */

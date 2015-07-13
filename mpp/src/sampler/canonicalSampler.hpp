@@ -71,15 +71,17 @@ namespace mpp{ namespace sampler{
          * acceptance rate of the MCMC chain is callled once each iteration using
          * getRandState() and getAcceptanceRate() functions. The dump() function
          * is used to pass information to the controller and finally write() function
-         * from IO is used to write chains to the disk. 
+         * from IO is used to write chains to the disk.
          */
         static void run(engineType & eng,ctrlrType & ctrlr,IOType & IO)
         {
-            BOOST_ASSERT_MSG(eng.numParams() == ctrlr.numParams(),
-                "Dimensionality mismatch");
-
             while( ctrlr.continueSampling() )
             {
+                // this is kept inside the while loop so that a resume data mismatch
+                // can be detected and the sampling stopped without an assertion error.
+                BOOST_ASSERT_MSG(eng.numParams() == ctrlr.numParams(),
+                    "Dimensionality mismatch");
+
                 realMatrixType samples(ctrlr.packetSize(),ctrlr.numParams());
                 realVectorType logPostVals(ctrlr.packetSize());
 
