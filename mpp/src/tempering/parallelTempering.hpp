@@ -3,14 +3,35 @@
 
 namespace mpp{ namespace prltemp {
 
+    /**
+     * \class powerLawTemperature
+     *
+     * \tparam _realScalarType real floating point type
+     *
+     * \brief A class for computing power law based B-coefficients for tempering.
+     *
+     * This class computes the B-coefficients for the parallel tempering using a power
+     * law, B = fact^(i/numChains).
+     */
     template<typename _realScalarType>
     class powerLawTemperature
     {
     public:
+
+        /**
+         * \typedef _realScalarType realScalarType
+         * \brief defines the real floating point type
+         */
         typedef _realScalarType realScalarType;
 
-        static const size_t NUM_MCMC_CHAINS=100;
+        static const size_t NUM_MCMC_CHAINS=100; /**< maximum number of mcmc chains in tempering */
 
+        /**
+         * \brief A constructor that sets up the power law based B coefficents
+         *
+         * \param fact base of the power law
+         * \param numChains number of chains in the parallel tempering
+         */
         powerLawTemperature(realScalarType const fact,size_t const numChains)
         :mFact(fact),mNumChains(numChains)
         {
@@ -20,6 +41,11 @@ namespace mpp{ namespace prltemp {
                 "For safety a maximum value for number states is set here. Re-compile with higher values.");
         }
 
+        /**
+         * \brief This function returns the value of the B-coefficient
+         * @param  i chain number (first chains is 0)
+         * @return   the value of the B-coefficient
+         */
         inline realScalarType value(size_t i) const
         {
             BOOST_ASSERT(i>=0 and i<mNumChains);
@@ -27,36 +53,97 @@ namespace mpp{ namespace prltemp {
             return std::pow(mFact,temp);
         }
 
+        /**
+         * \brief A function that returns the number of chains in the parallel tempering
+         * @return  the number of chains in the parallel tempering
+         */
         inline size_t numChains(void) const
         {
             return mNumChains;
         }
+
     private:
-        realScalarType mFact;
-        size_t mNumChains;
+        realScalarType mFact; /**< base of the power law*/
+        size_t mNumChains; /**< number of chains in the parallel tempering */
     };
 
+    /**
+     * \class parallelTemperingMCMC
+     *
+     * \brief This class performs parallel tempering on the MCMC provided
+     *
+     * \tparam _MCMCType type of MCMC in the parallel tempering
+     * \tparam _chainTempType type of the B-coefficients
+     *
+     * This class performs parallel tempering on the MCMC using a set of chain
+     * temperatures computed using the method provided.
+     */
     template<class _MCMCType,class _chainTempType>
     class parallelTemperingMCMC
     {
     public:
 
+        /**
+         * \typedef _MCMCType MCMCType
+         * \brief defines the MCMC type
+         */
         typedef _MCMCType MCMCType;
+
+        /**
+         * \typedef _chainTempType chainTempType
+         * \brief defines the method by which the chain temperatures are computed
+         */
         typedef _chainTempType chainTempType;
+
+        /**
+         * \typedef typename MCMCType::realScalarType realScalarType
+         * \brief real floating point type
+         */
         typedef typename MCMCType::realScalarType realScalarType;
+
         typedef typename chainTempType::realScalarType realScalarTypeChain;
+
+        /**
+         * \typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realVectorType
+         * \brief real floating point vector type
+         */
         typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, 1> realVectorType;
+
+        /**
+         * \typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, Eigen::Dynamic> realMatrixType
+         * \brief real floating point matrix type
+         */
         typedef Eigen::Matrix<realScalarType, Eigen::Dynamic, Eigen::Dynamic> realMatrixType;
+
+        /**
+         * \typedef typename MCMCType::randVarGenType randVarGenType
+         * \brief random variate generator type
+         */
         typedef typename MCMCType::randVarGenType randVarGenType;
+
+        /**
+         * \typedef typename realVectorType::Index indexType
+         * \brief integer type
+         */
         typedef typename realVectorType::Index indexType;
 
         static_assert(std::is_same<realScalarType,realScalarTypeChain>::value,
             "MCMC AND CHAIN-TEMPERATURE SHOULD SHOULD HAVE THE SAME FLOATING POINT TYPE");
 
-        static const size_t MAX_NUM_STATES = 100;
+        static const size_t MAX_NUM_STATES = 100; /**< maximum number of chains in tempering */
 
-        parallelTemperingMCMC(std::vector<MCMCType> & MCMC,realScalarType const swapRatio,chainTempType const & chainTemps)
-        :mB(MCMC.size()),mMCMC(MCMC),mSwapRatio(swapRatio),mChainTemps(chainTemps),mRVGen(0),mAccRate(1)
+        /**
+         * \brief A constructor that sets up the parallel tempering
+         *
+         * \param MCMC a vector of MCMCs
+         * \param swapRatio the ratio with which swaps are performed. 0 for none 1 for all.
+         * \param chainTemps a method for computing the chain temperatures
+         */
+        parallelTemperingMCMC(std::vector<MCMCType> & MCMC,
+            realScalarType const swapRatio,
+            chainTempType const & chainTemps)
+        :mB(MCMC.size()),mMCMC(MCMC),mSwapRatio(swapRatio),
+        mChainTemps(chainTemps),mRVGen(0),mAccRate(1)
         {
             BOOST_ASSERT_MSG(MCMC.size() <= MAX_NUM_STATES,
                 "For safety a maximum value for number states is set here. Re-compile with higher values.");
@@ -75,6 +162,18 @@ namespace mpp{ namespace prltemp {
             mNumChains = mMCMC.size();
         }
 
+
+        /**
+         * \breif A function for generating samples.
+         * \param samples     a real-matrix with dimensions num-samples x num-params
+         * \param logPostVals a real-vector with diemsions num-samples
+         *
+         * This function returns the number of samples reqested along with the
+         * corresponding log-posterior values. The \a samples should have the dimensionality
+         * of num-samples x num-params and the \a logPostVals should have the dimensionality
+         * of num-samples. Thus the nunber of samples to be generated can be controlled
+         * by the dimensionality of \a samples ( and \a logPostVals)
+         */
         void generate(realMatrixType & samples,realVectorType & logPostVals)
         {
             BOOST_ASSERT_MSG(samples.rows() == logPostVals.rows(),
@@ -157,11 +256,20 @@ namespace mpp{ namespace prltemp {
 
         }
 
+        /**
+         * \brief A function that retunes the current acceptance rate (of chain 0).
+         * @return  current acceptance rate (of chain 0)
+         */
         inline realScalarType getAcceptanceRate(void) const
         {
             return mAccRate;
         }
 
+        /**
+         * \brief A function that returns a chain from the parallel tempering chains
+         * @param  i index of the chain
+         * @return   chain from the parallel tempering chains
+         */
         inline realMatrixType getSamplesFromChain(size_t i) const
         {
             BOOST_ASSERT_MSG(mSamples.size()>0,
@@ -170,6 +278,11 @@ namespace mpp{ namespace prltemp {
             return mSamples[i];
         }
 
+        /**
+         * \brief A function that retunrs log posterior values from a specific chain
+         * @param  i index of the chain
+         * @return   log posterior values from a specific chain
+         */
         inline realVectorType getLogPostValsFromChain(size_t i) const
         {
             BOOST_ASSERT_MSG(mLogPostVals.size()>0,
@@ -178,22 +291,26 @@ namespace mpp{ namespace prltemp {
             return mLogPostVals[i];
         }
 
+        /**
+         * \brief A function that returns the number of parameters in the log-posterior
+         * @return  the number of parameters in the log-posterior
+         */
         inline size_t numParams(void) const
         {
             return mNumParams;
         }
 
     private:
-        realVectorType mB;
-        std::vector<MCMCType> & mMCMC;
-        realScalarType mSwapRatio;
-        chainTempType mChainTemps;
-        randVarGenType mRVGen;
-        realScalarType mAccRate;
-        std::vector<realMatrixType> mSamples;
-        std::vector<realVectorType> mLogPostVals;
-        size_t mNumParams;
-        size_t mNumChains;
+        realVectorType mB; /**< B-coefficients */
+        std::vector<MCMCType> & mMCMC; /**< MCMCs */
+        realScalarType mSwapRatio; /**< swap ratio for parallel chains */
+        chainTempType mChainTemps; /**<  chain temperature calculator */
+        randVarGenType mRVGen; /**< random variate generator */
+        realScalarType mAccRate; /**< acceptance rate of chain 0  */
+        std::vector<realMatrixType> mSamples; /**< samples from all chains */
+        std::vector<realVectorType> mLogPostVals; /**< log-posterior values from all chains */
+        size_t mNumParams; /**< number of parameters in the log-posterior */
+        size_t mNumChains; /**< number of chains in the parallel tempering */
     };
 
 }//namespace pt

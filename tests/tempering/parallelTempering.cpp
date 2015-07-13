@@ -154,21 +154,22 @@ void testParallelTempering2DRosenbrock(void)
 
     std::vector<canonicalHMCType> hmcVect(numChains,canonHMC);
     realScalarType swapRatio = 0.5;
-    chainTempType chainTemps(0.005,numChains);
+    chainTempType chainTemps(0.0001,numChains);
 
     parallelTemperingMCMCType paraTempMCMC(hmcVect,swapRatio,chainTemps);
 
     paraTempMCMC.generate(samples,logPostVals);
 
 
-    BOOST_REQUIRE(0.96 < paraTempMCMC.getAcceptanceRate() and paraTempMCMC.getAcceptanceRate() < 0.98);
+    BOOST_REQUIRE(0.96 < paraTempMCMC.getAcceptanceRate() and paraTempMCMC.getAcceptanceRate() < 1);
 
     /*
     std::cout<<"acceptance rate = "<<paraTempMCMC.getAcceptanceRate()<<std::endl;
 
     std::ofstream outFile;
     outFile.open("./rosenbrock.dat",std::ios::trunc);
-    outFile<<samples;
+    //outFile<<samples;
+    outFile<<paraTempMCMC.getSamplesFromChain(0);
     outFile.close();*/
 }
 

@@ -272,7 +272,7 @@ namespace mpp{ namespace Hamiltonian{
          */
         inline void setTempB(realScalarType const B)
         {
-            BOOST_ASSERT_MSG(B>0 and B<=1, "The parameter B should be between 0 and 1");
+            BOOST_ASSERT_MSG(B>=0 and B<=1, "The parameter B should be between 0 and 1");
             mB = B;
         }
 
