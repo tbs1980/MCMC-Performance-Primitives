@@ -31,7 +31,6 @@ namespace mpp{ namespace sampler{
 
                 std::string randState = eng.getRandState();
                 realScalarType accRate = eng.getAcceptanceRate();
-                realVectorType startPoint = eng.getStartPoint();
 
                 ctrlr.dump(samples,accRate,randState);
 
