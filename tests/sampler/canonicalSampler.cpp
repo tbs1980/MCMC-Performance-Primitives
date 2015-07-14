@@ -73,6 +73,12 @@ void testCanonical(void)
     controlType ctrl(numParams, packetSize, numBurn, numSamples, rootPathStr,
         consoleOutput,startPoint,randState);
 
+    // if resuming from pervious state, set the start point here
+    startPoint = ctrl.getStartPoint();
+    randState = ctrl.getRandState();
+    canonHMC.setStartPoint(startPoint);
+    canonHMC.setRandState(randState);
+
     // define IO
     const std::string outFileName = ctrl.getChainFileName();
     const std::string delimiter(",");
@@ -144,6 +150,12 @@ void testCanonicalDiag(void)
 
     controlType ctrl(numParams, packetSize, numBurn, numSamples, rootPathStr,
         consoleOutput,startPoint,randState);
+
+    // if resuming from pervious state, set the start point here
+    startPoint = ctrl.getStartPoint();
+    randState = ctrl.getRandState();
+    canonHMC.setStartPoint(startPoint);
+    canonHMC.setRandState(randState);
 
     // define IO
     const std::string outFileName = ctrl.getChainFileName();

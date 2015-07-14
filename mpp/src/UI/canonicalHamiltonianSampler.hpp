@@ -232,6 +232,13 @@ namespace mpp
             const std::string outFileName = ctrl.getChainFileName();
             IOType writeAllIO(outFileName,mDelimiter,mPrecision);
 
+            // set the start point and the random number state from the controller
+            // if resuming from the previous state, we should get them correct
+            realVectorType startPoint = ctrl.getStartPoint();
+            randState = ctrl.getRandState();
+            canonHMC.setStartPoint(startPoint);
+            canonHMC.setRandState(randState);
+
             // run the sampler
             samplerType::run(canonHMC,ctrl,writeAllIO);
         }
