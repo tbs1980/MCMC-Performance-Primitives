@@ -50,7 +50,7 @@ namespace mpp{ namespace IO{
          * \brief The default constructor
          */
         IOWriteAllParams()
-        :mThinLength(1)
+        :mThinLength(1),mPacketSize(0)
         {
         }
 
@@ -58,11 +58,12 @@ namespace mpp{ namespace IO{
          * \brief A constructor that sets up the IO for the sampler
          * \param  fileName The name of the output file
          */
-        explicit IOWriteAllParams(std::string const& fileName,indexType const thinLength = indexType(1))
-        :m_fileName(fileName),m_delimiter(std::string(",")),m_precision(10),
-        mThinLength(thinLength)
+        explicit IOWriteAllParams(std::string const& fileName,indexType const thinLength = indexType(1),indexType const packetSize = indexType(0))
+        :m_fileName(fileName),m_delimiter(std::string(",")),m_precision(10)
+        ,mThinLength(thinLength),mPacketSize(packetSize)
         {
             BOOST_ASSERT_MSG(thinLength>0,"Thin length should be a positive integer.");
+            BOOST_ASSERT_MSG(packetSize>=0,"Packet-size should be a positive integer or zero.");
         }
 
         /**
@@ -72,11 +73,13 @@ namespace mpp{ namespace IO{
          * \param precision The precision with which the output is written
          */
         IOWriteAllParams(std::string const& fileName,std::string const & delimiter,
-            unsigned int const precision,indexType const thinLength = indexType(1))
+            unsigned int const precision,indexType const thinLength = indexType(1)
+            ,indexType const packetSize = indexType(0))
         :m_fileName(fileName),m_delimiter(delimiter),m_precision(precision)
-        ,mThinLength(thinLength)
+        ,mThinLength(thinLength),mPacketSize(packetSize)
         {
             BOOST_ASSERT_MSG(thinLength>0,"Thin length should be a positive integer.");
+            BOOST_ASSERT_MSG(packetSize>=0,"Packet-size should be a positive integer or zero.");
         }
 
         /**
@@ -89,6 +92,7 @@ namespace mpp{ namespace IO{
             m_delimiter = other.m_delimiter;
             m_precision = other.m_precision;
             mThinLength = other.mThinLength;
+            mPacketSize = other.mPacketSize;
         }
 
         /**
@@ -130,6 +134,10 @@ namespace mpp{ namespace IO{
                     }
                     m_file<<samples(i,(samples.cols()-1) )<<std::endl;
                     i = i + mThinLength;
+                    if(mPacketSize >0 and i>=mPacketSize)
+                    {
+                        break;
+                    }
                 }
             }
             else
@@ -163,6 +171,7 @@ namespace mpp{ namespace IO{
         std::string m_delimiter; /**< delimiter */
         unsigned int m_precision; /**< precision */
         indexType mThinLength;
+        indexType mPacketSize;
 
     };
 
