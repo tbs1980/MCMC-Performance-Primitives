@@ -143,18 +143,19 @@ void testParallelTempering2DRosenbrock(void)
 
     seedType seed = 0;
 
+    indexType const numChains = 8;
+
     const indexType numsamples = 1000;
-    realMatrixType samples(numsamples,N);
-    realVectorType logPostVals = realVectorType::Zero(numsamples);
+    realMatrixType samples(numsamples*numChains,N);
+    realVectorType logPostVals = realVectorType::Zero(numsamples*numChains);
     rVGenType rvGen(seed);
 
     canonicalHMCType canonHMC(maxEps,maxNumsteps,q0,rvGen,G,K);
 
-    size_t const numChains = 8;
 
     std::vector<canonicalHMCType> hmcVect(numChains,canonHMC);
     realScalarType swapRatio = 0.5;
-    chainTempType chainTemps(0.0001,numChains);
+    chainTempType chainTemps(0.0001,(size_t)numChains);
 
     parallelTemperingMCMCType paraTempMCMC(hmcVect,swapRatio,chainTemps);
 
@@ -173,12 +174,14 @@ void testParallelTempering2DRosenbrock(void)
     outFile.close();*/
 }
 
+/*
 BOOST_AUTO_TEST_CASE(parallelTempering2D4BlobGauss)
 {
     //testParallelTemperingHMCDim10<float>();
     //testParallelTemperingHMCDim10<double>();
     testParallelTemperingHMCDim10<long double>();
 }
+*/
 
 BOOST_AUTO_TEST_CASE(parallelTempering2DRosenbrock)
 {

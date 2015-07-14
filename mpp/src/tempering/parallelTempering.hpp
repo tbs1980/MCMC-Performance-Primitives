@@ -180,12 +180,11 @@ namespace mpp{ namespace prltemp {
                 "number of samples should be equal to size of logPostVals");
             BOOST_ASSERT_MSG((size_t) samples.cols() == mNumParams,
                 "number of parameters in the samples does not match the number of parameters in the start point");
+            BOOST_ASSERT_MSG(samples.rows() % (indexType) mNumChains == 0,
+                "The number of rows in samples should be an integer multiple of number of chains in tempering.");
 
-            size_t numSamples = (size_t) samples.rows();
+            size_t numSamples = (size_t) samples.rows() / mNumChains;
             size_t mNumChains = mMCMC.size();
-
-            mSamples = std::vector<realMatrixType>(mNumChains,samples);
-            mLogPostVals = std::vector<realVectorType>(mNumChains,logPostVals);
 
             realScalarType accRate = 0.;
 
@@ -242,17 +241,13 @@ namespace mpp{ namespace prltemp {
                 // 9) copy the mcmc states to corresponding chains
                 for(size_t j=0;j<mMCMC.size();++j)
                 {
-                    mSamples[j].row(i) = mMCMC[j].getStartPoint();
-                    mLogPostVals[j](i) = mMCMC[j].getLogPostVal();
+                    samples.row(j*numSamples+i) = mMCMC[j].getStartPoint();
+                    logPostVals(j*numSamples+i) = mMCMC[j].getLogPostVal();
                 }
             }
 
             // 10) find the mean acceptance rate
             mAccRate = accRate/(realScalarType)numSamples;
-
-            // 11) finally copy temp=1 chains for return
-            samples = mSamples[0];
-            logPostVals = mLogPostVals[0];
 
         }
 
@@ -263,32 +258,6 @@ namespace mpp{ namespace prltemp {
         inline realScalarType getAcceptanceRate(void) const
         {
             return mAccRate;
-        }
-
-        /**
-         * \brief A function that returns a chain from the parallel tempering chains
-         * @param  i index of the chain
-         * @return   chain from the parallel tempering chains
-         */
-        inline realMatrixType getSamplesFromChain(size_t i) const
-        {
-            BOOST_ASSERT_MSG(mSamples.size()>0,
-                "The samples has not been computed yet. Please generate them first.");
-            BOOST_ASSERT(i >=0 and i<mNumChains);
-            return mSamples[i];
-        }
-
-        /**
-         * \brief A function that retunrs log posterior values from a specific chain
-         * @param  i index of the chain
-         * @return   log posterior values from a specific chain
-         */
-        inline realVectorType getLogPostValsFromChain(size_t i) const
-        {
-            BOOST_ASSERT_MSG(mLogPostVals.size()>0,
-                "The samples has not been computed yet. Please generate them first.");
-            BOOST_ASSERT(i >=0 and i<mNumChains);
-            return mLogPostVals[i];
         }
 
         /**
@@ -307,8 +276,10 @@ namespace mpp{ namespace prltemp {
         chainTempType mChainTemps; /**<  chain temperature calculator */
         randVarGenType mRVGen; /**< random variate generator */
         realScalarType mAccRate; /**< acceptance rate of chain 0  */
-        std::vector<realMatrixType> mSamples; /**< samples from all chains */
-        std::vector<realVectorType> mLogPostVals; /**< log-posterior values from all chains */
+        //std::vector<realMatrixType> mSamples; /**< samples from all chains */
+        //std::vector<realVectorType> mLogPostVals; /**< log-posterior values from all chains */
+        realMatrixType mSamples;
+        realVectorType mLogPostVals;
         size_t mNumParams; /**< number of parameters in the log-posterior */
         size_t mNumChains; /**< number of chains in the parallel tempering */
     };
