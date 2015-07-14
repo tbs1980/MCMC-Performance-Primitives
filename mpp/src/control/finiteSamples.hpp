@@ -66,12 +66,13 @@ namespace mpp { namespace control {
             std::string const& rootPathStr,
             bool const consoleOutput,
             realVectorType const & startPoint,
-            std::string const& randState)
+            std::string const& randState,
+            size_t const numChains = 1)
         :m_numParams(numParams), m_packetSize(packetSize),m_numBurn(numBurn),
             m_numSamples(numSamples), m_rootPathStr(rootPathStr),
             m_consoleOutput(consoleOutput), m_samplesTaken(0),
-            m_samplesBurned(0), m_continueSampling(true),m_startPoint(numParams),
-            m_randState(randState),m_accRate(0)
+            m_samplesBurned(0), m_continueSampling(true),m_startPoint(numParams*numChains),
+            m_randState(randState),m_accRate(0),mNumChains(numChains)
         {
             BOOST_ASSERT_MSG(numParams >0,"At least one parameters is required.");
             BOOST_ASSERT_MSG(packetSize>0,"Packet size should be greater than zero");
@@ -80,9 +81,13 @@ namespace mpp { namespace control {
 
             m_archiveOutFileName = m_rootPathStr + std::string(".resume");
             m_chainOutFileName = m_rootPathStr + std::string(".chain");
-            for(size_t i=0;i<m_numParams;++i)
+
+            for(size_t j=0;j<numChains;++j)
             {
-                m_startPoint[i] = startPoint(i);
+                for(size_t i=0;i<m_numParams;++i)
+                {
+                    m_startPoint[j*m_numParams+i] = startPoint(i);
+                }
             }
 
             //see if the resume file exists?
@@ -112,7 +117,7 @@ namespace mpp { namespace control {
                 {
                     // perform sanity checks before moving forward
                     bool verified = verifyResumeData(numParams,packetSize,numBurn,
-                        numSamples,consoleOutput);
+                        numSamples,consoleOutput,numChains);
                     if(verified == false)
                     {
                         BOOST_LOG_TRIVIAL(fatal) << "No sampling will be perfomred.";
@@ -159,9 +164,9 @@ namespace mpp { namespace control {
         void dump(realMatrixType const & samples,realScalarType const accRate,
             std::string const& randState)
         {
-            BOOST_ASSERT_MSG((size_t) samples.rows() == m_packetSize ,
+            BOOST_ASSERT_MSG((size_t) samples.rows() == m_packetSize*mNumChains ,
                 "Number of rows in samples should be identical to the packet size");
-            size_t n = (size_t) samples.rows();
+            size_t n = m_packetSize ;
 
             realScalarType precAccRate = accRate*100;
 
@@ -189,9 +194,18 @@ namespace mpp { namespace control {
             m_continueSampling = m_samplesTaken >= m_numSamples ? false : true;
 
             // save the states
+            /*
             for(size_t i=0;i<m_numParams;++i)
             {
                 m_startPoint[i] = samples(n-1,i);
+            }
+            */
+            for(size_t j=0;j<mNumChains;++j)
+            {
+                for(size_t i=0;i<m_numParams;++i)
+                {
+                    m_startPoint[j*m_numParams+i] = samples((j+1)*m_packetSize-1,i);
+                }
             }
             m_accRate = accRate;
             m_randState = randState;
@@ -275,6 +289,11 @@ namespace mpp { namespace control {
             return m_packetSize;
         }
 
+        size_t getNumChains() const
+        {
+            return mNumChains;
+        }
+
     private:
 
         /**
@@ -329,14 +348,18 @@ namespace mpp { namespace control {
             {
                 ar & m_accRate;
             }
+
+            ar & mNumChains;
         }
 
         bool verifyResumeData(size_t const numParams,
             size_t const packetSize,
             size_t const numBurn,
             size_t const numSamples,
-            bool const consoleOutput)
+            bool const consoleOutput,
+            size_t const numChains)
         {
+            // TODO this could be implemented in a different way?
             if(numParams != m_numParams)
             {
                 BOOST_LOG_TRIVIAL(fatal) << "The input number of parameters does not match the the resume data.";
@@ -372,6 +395,13 @@ namespace mpp { namespace control {
                 return false;
             }
 
+            if(numChains != mNumChains)
+            {
+                BOOST_LOG_TRIVIAL(fatal) << "The number of chains does does not match the resume data.";
+                m_continueSampling = false;
+                return false;
+            }
+
             return true;
         }
 
@@ -393,6 +423,8 @@ namespace mpp { namespace control {
 
         std::string m_archiveOutFileName; /**< ouput file name of the archive */
         std::string m_chainOutFileName; /**< ouput file name of the MCMC chains */
+
+        size_t mNumChains;
     };
 
 }//namespace control
