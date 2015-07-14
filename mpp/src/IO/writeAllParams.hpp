@@ -49,16 +49,20 @@ namespace mpp{ namespace IO{
         /**
          * \brief The default constructor
          */
-        IOWriteAllParams(){}
+        IOWriteAllParams()
+        :mThinLength(1)
+        {
+        }
 
         /**
          * \brief A constructor that sets up the IO for the sampler
          * \param  fileName The name of the output file
          */
-        explicit IOWriteAllParams(std::string const& fileName)
-        :m_fileName(fileName),m_delimiter(std::string(",")),m_precision(10)
+        explicit IOWriteAllParams(std::string const& fileName,indexType const thinLength = indexType(1))
+        :m_fileName(fileName),m_delimiter(std::string(",")),m_precision(10),
+        mThinLength(thinLength)
         {
-
+            BOOST_ASSERT_MSG(thinLength>0,"Thin length should be a positive integer.");
         }
 
         /**
@@ -68,10 +72,11 @@ namespace mpp{ namespace IO{
          * \param precision The precision with which the output is written
          */
         IOWriteAllParams(std::string const& fileName,std::string const & delimiter,
-            unsigned int const precision)
+            unsigned int const precision,indexType const thinLength = indexType(1))
         :m_fileName(fileName),m_delimiter(delimiter),m_precision(precision)
+        ,mThinLength(thinLength)
         {
-
+            BOOST_ASSERT_MSG(thinLength>0,"Thin length should be a positive integer.");
         }
 
         /**
@@ -83,6 +88,7 @@ namespace mpp{ namespace IO{
             m_fileName = other.m_fileName;
             m_delimiter = other.m_delimiter;
             m_precision = other.m_precision;
+            mThinLength = other.mThinLength;
         }
 
         /**
@@ -111,7 +117,9 @@ namespace mpp{ namespace IO{
             {
                 m_file<<std::scientific;
                 m_file<<std::setprecision(m_precision);
-                for(indexType i=0;i<samples.rows();++i)
+                //for(indexType i=0;i<samples.rows();++i)
+                indexType i=0;
+                while(i<samples.rows())
                 {
                     //write the log posterior at the beginning
                     m_file<<logPostVals(i)<<m_delimiter;
@@ -121,6 +129,7 @@ namespace mpp{ namespace IO{
                         m_file<<samples(i,j)<<m_delimiter;
                     }
                     m_file<<samples(i,(samples.cols()-1) )<<std::endl;
+                    i = i + mThinLength;
                 }
             }
             else
@@ -153,6 +162,7 @@ namespace mpp{ namespace IO{
         std::ofstream m_file; /**< output file handler*/
         std::string m_delimiter; /**< delimiter */
         unsigned int m_precision; /**< precision */
+        indexType mThinLength;
 
     };
 

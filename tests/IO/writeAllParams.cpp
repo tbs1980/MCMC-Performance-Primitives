@@ -19,8 +19,9 @@ void testMat10D(void)
     const std::string outFileName("testIOWriteAllParams.dat");
     const std::string delimiter(",");
     const unsigned int precision = 10;
+    const indexType thinLength = 2;
 
-    IOType testIO(outFileName,delimiter,precision);
+    IOType testIO(outFileName,delimiter,precision,thinLength);
 
     const indexType numSamples = 100;
     const indexType numParams = 1;
