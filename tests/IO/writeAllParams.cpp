@@ -19,11 +19,12 @@ void testMat10D(void)
     const std::string outFileName("testIOWriteAllParams.dat");
     const std::string delimiter(",");
     const unsigned int precision = 10;
-    const indexType thinLength = 2;
+    const indexType thinLength = 1;
+    const indexType packetSize = 100;
 
-    IOType testIO(outFileName,delimiter,precision,thinLength);
+    IOType testIO(outFileName,delimiter,precision,thinLength,packetSize);
 
-    const indexType numSamples = 100;
+    const indexType numSamples = 200;//packetSize;
     const indexType numParams = 1;
 
     realMatrixType samples = realMatrixType::Random(numSamples,numParams);

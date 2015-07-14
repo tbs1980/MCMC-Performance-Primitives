@@ -74,9 +74,10 @@ namespace mpp { namespace control {
             m_samplesBurned(0), m_continueSampling(true),m_startPoint(numParams*numChains),
             m_randState(randState),m_accRate(0),mNumChains(numChains)
         {
+            //std::cout<<numParams*numChains<<"\t"<<startPoint.rows()<<std::endl;
             BOOST_ASSERT_MSG(numParams >0,"At least one parameters is required.");
             BOOST_ASSERT_MSG(packetSize>0,"Packet size should be greater than zero");
-            BOOST_ASSERT_MSG(numParams == (size_t) startPoint.rows(),
+            BOOST_ASSERT_MSG(numParams*numChains == (size_t) startPoint.rows(),
                 "The startpoint should have numParams number of rows");
 
             m_archiveOutFileName = m_rootPathStr + std::string(".resume");
@@ -245,8 +246,8 @@ namespace mpp { namespace control {
          */
         realVectorType getStartPoint() const
         {
-            realVectorType q0(m_numParams);
-            for(size_t i=0;i<m_numParams;++i)
+            realVectorType q0(m_numParams*mNumChains);
+            for(size_t i=0;i< (size_t)q0.rows();++i)
             {
                 q0(i) = m_startPoint[i];
             }

@@ -341,6 +341,15 @@ namespace mpp{ namespace Hamiltonian{
             return mSeed;
         }
 
+        /**
+         * \brief A function that returns the address of the random variate generator
+         * @return the address of the random variate generator
+         */
+        inline randVarGenType & getRVGen() const
+        {
+            return mRVGen;
+        }
+
     private:
         realScalarType m_maxEps; /**< maximum value of epsilon */
         size_t m_maxNumSteps;/**< maximum number of steps */

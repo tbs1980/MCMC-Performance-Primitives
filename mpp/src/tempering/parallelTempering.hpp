@@ -143,7 +143,7 @@ namespace mpp{ namespace prltemp {
             realScalarType const swapRatio,
             chainTempType const & chainTemps)
         :mB(MCMC.size()),mMCMC(MCMC),mSwapRatio(swapRatio),
-        mChainTemps(chainTemps),mRVGen(0),mAccRate(1)
+        mChainTemps(chainTemps),mRVGen(MCMC[0].getRVGen()),mAccRate(1)
         {
             BOOST_ASSERT_MSG(MCMC.size() <= MAX_NUM_STATES,
                 "For safety a maximum value for number states is set here. Re-compile with higher values.");
@@ -269,12 +269,61 @@ namespace mpp{ namespace prltemp {
             return mNumParams;
         }
 
+        /**
+         * \brief A function that returns current state of the random number generator
+         * @return  current state of the random number generator
+         */
+        inline std::string getRandState(void) const
+        {
+            std::stringstream state;
+            mRVGen.getState(state);
+            return state.str();
+        }
+
+        /**
+         * \brief A function that sets current state of the random number generator
+         * @param stateStr state of the random number generator to be set
+         */
+        inline void setRandState(std::string & stateStr)
+        {
+            std::stringstream state;
+            state<<stateStr;
+            mRVGen.setState(state);
+        }
+
+        /**
+         * \brief A function that returns the address of the random variate generator
+         * @return the address of the random variate generator
+         */
+        inline randVarGenType & getRVGen() const
+        {
+            return mRVGen;
+        }
+
+        /**
+         * \brief A function that returns the start-point of the HMC
+         * @param q0 the start-point of the HMC to be set
+         */
+        inline void setStartPoint(realVectorType const & q0)
+        {
+            //std::cout<<q0.rows()<<"\t"<<mNumParams<<"\t"<<mNumChains<<std::endl;
+            BOOST_ASSERT_MSG((size_t)q0.rows() == mNumParams*mNumChains ,
+            "Dimensions of input q0 does not agree with mNumParams*mNumChains");
+
+            for(size_t i=0;i<mNumChains;++i)
+            {
+                realVectorType stp = q0.segment(i*mNumParams,mNumParams);
+                //std::cout<<"for chain "<<i<<" is "<<q0.transpose()<<std::endl;
+                mMCMC[i].setStartPoint(stp);
+            }
+        }
+
     private:
         realVectorType mB; /**< B-coefficients */
         std::vector<MCMCType> & mMCMC; /**< MCMCs */
         realScalarType mSwapRatio; /**< swap ratio for parallel chains */
         chainTempType mChainTemps; /**<  chain temperature calculator */
-        randVarGenType mRVGen; /**< random variate generator */
+        randVarGenType & mRVGen; /**< random variate generator */
         realScalarType mAccRate; /**< acceptance rate of chain 0  */
         //std::vector<realMatrixType> mSamples; /**< samples from all chains */
         //std::vector<realVectorType> mLogPostVals; /**< log-posterior values from all chains */

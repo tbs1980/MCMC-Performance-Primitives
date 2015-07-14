@@ -82,8 +82,8 @@ namespace mpp{ namespace sampler{
                 BOOST_ASSERT_MSG(eng.numParams() == ctrlr.numParams(),
                     "Dimensionality mismatch");
 
-                realMatrixType samples(ctrlr.packetSize(),ctrlr.numParams());
-                realVectorType logPostVals(ctrlr.packetSize());
+                realMatrixType samples(ctrlr.packetSize()*ctrlr.getNumChains(),ctrlr.numParams());
+                realVectorType logPostVals(ctrlr.packetSize()*ctrlr.getNumChains());
 
                 eng.generate(samples,logPostVals);
 
