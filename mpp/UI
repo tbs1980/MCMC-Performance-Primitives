@@ -2,5 +2,6 @@
 #define MPP_UI
 
 #include "src/UI/canonicalHamiltonianSampler.hpp"
+#include "src/UI/parallelTemperedHamiltonianSampler.hpp"
 
 #endif //MPP_UI
