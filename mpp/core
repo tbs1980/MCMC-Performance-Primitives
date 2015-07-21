@@ -2,6 +2,7 @@
 #define MPP_CORE
 
 #include "Hamiltonian"
+#include "tempering"
 #include "control"
 #include "IO"
 #include "sampler"
