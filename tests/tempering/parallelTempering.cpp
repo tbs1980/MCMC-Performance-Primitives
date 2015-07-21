@@ -96,11 +96,10 @@ void testParallelTemperingHMCDim10(void)
 
     size_t const numChains = 8;
 
-    std::vector<canonicalHMCType> hmcVect(numChains,canonHMC);
     realScalarType swapRatio = 0.5;
     chainTempType chainTemps(0.005,numChains);
 
-    parallelTemperingMCMCType paraTempMCMC(hmcVect,swapRatio,chainTemps);
+    parallelTemperingMCMCType paraTempMCMC(canonHMC,swapRatio,chainTemps);
 
     paraTempMCMC.generate(samples,logPostVals);
 
@@ -153,39 +152,30 @@ void testParallelTempering2DRosenbrock(void)
     canonicalHMCType canonHMC(maxEps,maxNumsteps,q0,rvGen,G,K);
 
 
-    std::vector<canonicalHMCType> hmcVect(numChains,canonHMC);
     realScalarType swapRatio = 0.5;
     chainTempType chainTemps(0.0001,(size_t)numChains);
 
-    parallelTemperingMCMCType paraTempMCMC(hmcVect,swapRatio,chainTemps);
+    parallelTemperingMCMCType paraTempMCMC(canonHMC,swapRatio,chainTemps);
 
     paraTempMCMC.generate(samples,logPostVals);
 
 
     BOOST_REQUIRE(0.96 < paraTempMCMC.getAcceptanceRate() and paraTempMCMC.getAcceptanceRate() < 1);
 
-    /*
-    std::cout<<"acceptance rate = "<<paraTempMCMC.getAcceptanceRate()<<std::endl;
-
-    std::ofstream outFile;
-    outFile.open("./rosenbrock.dat",std::ios::trunc);
-    //outFile<<samples;
-    outFile<<paraTempMCMC.getSamplesFromChain(0);
-    outFile.close();*/
 }
 
-/*
+
 BOOST_AUTO_TEST_CASE(parallelTempering2D4BlobGauss)
 {
-    //testParallelTemperingHMCDim10<float>();
-    //testParallelTemperingHMCDim10<double>();
+    testParallelTemperingHMCDim10<float>();
+    testParallelTemperingHMCDim10<double>();
     testParallelTemperingHMCDim10<long double>();
 }
-*/
+
 
 BOOST_AUTO_TEST_CASE(parallelTempering2DRosenbrock)
 {
-    //testParallelTempering2DRosenbrock<float>();
-    //testParallelTempering2DRosenbrock<double>();
+    testParallelTempering2DRosenbrock<float>();
+    testParallelTempering2DRosenbrock<double>();
     testParallelTempering2DRosenbrock<long double>();
 }

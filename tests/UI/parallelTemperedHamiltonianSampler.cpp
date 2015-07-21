@@ -95,7 +95,8 @@ void testParallelTemperedHamiltonianSampler()
 BOOST_AUTO_TEST_CASE(parallelTemperedHamiltonianSampler)
 {
     BOOST_TEST_MESSAGE( "Testing parallel tempered Hamiltonian sampler for float,dobule and long double." );
-    //testParallelTemperedHamiltonianSampler<float>();
-    //testParallelTemperedHamiltonianSampler<double>();
+
+    testParallelTemperedHamiltonianSampler<float>();
+    testParallelTemperedHamiltonianSampler<double>();
     testParallelTemperedHamiltonianSampler<long double>();
 }

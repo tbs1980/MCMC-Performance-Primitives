@@ -153,7 +153,6 @@ namespace mpp
         )
         :mLogPost(logPost),mNumParams(numParams),mMaxEps(maxEps)
         ,mMaxNumSteps(maxNumSteps),mStartPoint(startPoint),mRVGen(randSeed)
-        //mRandSeed(randSeed)
         ,mPacketSize(packetSize),mNumBurn(numBurn),mNumSamples(numSamples)
         ,mRootPathStr(rootPathStr),mConsoleOutput(consoleOutput)
         ,mDelimiter(delimiter),mPrecision(precision),mKeDiagMInv(keDiagMInv)
@@ -240,6 +239,7 @@ namespace mpp
          */
         void run()
         {
+            // define the kinetic energy
             kinEngType K(mKeDiagMInv);
 
             // define the Hamiltonian Monte Carlo
@@ -253,9 +253,8 @@ namespace mpp
                 mConsoleOutput,mStartPoint,randState);
 
             // define the parallel tempering
-            std::vector<canonicalHMCType> hmcVect(mNumChains,canonHMC);
             chainTempType chainTemps(mPowBaseFact,mNumChains);
-            parallelTemperingMCMCType paraTempMCMC(hmcVect,mSwapRatio,chainTemps);
+            parallelTemperingMCMCType paraTempMCMC(canonHMC,mSwapRatio,chainTemps);
 
             // define IO object
             const std::string outFileName = ctrl.getChainFileName();
@@ -278,7 +277,6 @@ namespace mpp
         realScalarType mMaxEps;/**< value of the epsilon of leapfrog */
         size_t mMaxNumSteps;/**< maximum number steps in the leapfrog */
         realVectorType const & mStartPoint;/**< staring point of the sampler */
-        //size_t mRandSeed;/**< random number seed */
         rVGenType mRVGen;/**< random variate generator*/
         size_t mPacketSize;/**< number samples to be geerated in one go of HMC */
         size_t mNumBurn;/**< number of samples to be burned */

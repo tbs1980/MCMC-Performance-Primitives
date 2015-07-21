@@ -132,25 +132,24 @@ namespace mpp{ namespace prltemp {
 
         static const size_t MAX_NUM_STATES = 100; /**< maximum number of chains in tempering */
 
+
         /**
          * \brief A constructor that sets up the parallel tempering
          *
-         * \param MCMC a vector of MCMCs
+         * \param MCMC Markov Chain Monte Carlo object
          * \param swapRatio the ratio with which swaps are performed. 0 for none 1 for all.
          * \param chainTemps a method for computing the chain temperatures
          */
-        parallelTemperingMCMC(std::vector<MCMCType> & MCMC,
+        parallelTemperingMCMC(MCMCType MCMC,
             realScalarType const swapRatio,
             chainTempType const & chainTemps)
-        :mB(MCMC.size()),mMCMC(MCMC),mSwapRatio(swapRatio),
-        mChainTemps(chainTemps),mRVGen(MCMC[0].getRVGen()),mAccRate(1)
+        :mB(chainTemps.numChains()),mMCMC(chainTemps.numChains(),MCMC),mSwapRatio(swapRatio),
+        mChainTemps(chainTemps),mRVGen(MCMC.getRVGen()),mAccRate(1)
         {
-            BOOST_ASSERT_MSG(MCMC.size() <= MAX_NUM_STATES,
+            BOOST_ASSERT_MSG(mChainTemps.numChains() <= MAX_NUM_STATES,
                 "For safety a maximum value for number states is set here. Re-compile with higher values.");
             BOOST_ASSERT_MSG(swapRatio>0 and swapRatio<=1,
                 "Swap-ratio should be a real number btween 0 and 1.");
-            BOOST_ASSERT_MSG(mMCMC.size() == mChainTemps.numChains(),
-                "Number of chains in MCMC does not match the number of chains in chain-temperatures.");
 
             for(size_t i=0;i<mMCMC.size();++i)
             {
@@ -306,27 +305,23 @@ namespace mpp{ namespace prltemp {
          */
         inline void setStartPoint(realVectorType const & q0)
         {
-            //std::cout<<q0.rows()<<"\t"<<mNumParams<<"\t"<<mNumChains<<std::endl;
             BOOST_ASSERT_MSG((size_t)q0.rows() == mNumParams*mNumChains ,
             "Dimensions of input q0 does not agree with mNumParams*mNumChains");
 
             for(size_t i=0;i<mNumChains;++i)
             {
                 realVectorType stp = q0.segment(i*mNumParams,mNumParams);
-                //std::cout<<"for chain "<<i<<" is "<<q0.transpose()<<std::endl;
                 mMCMC[i].setStartPoint(stp);
             }
         }
 
     private:
         realVectorType mB; /**< B-coefficients */
-        std::vector<MCMCType> & mMCMC; /**< MCMCs */
+        std::vector<MCMCType> mMCMC; /**< MCMCs */
         realScalarType mSwapRatio; /**< swap ratio for parallel chains */
         chainTempType mChainTemps; /**<  chain temperature calculator */
         randVarGenType & mRVGen; /**< random variate generator */
         realScalarType mAccRate; /**< acceptance rate of chain 0  */
-        //std::vector<realMatrixType> mSamples; /**< samples from all chains */
-        //std::vector<realVectorType> mLogPostVals; /**< log-posterior values from all chains */
         realMatrixType mSamples;
         realVectorType mLogPostVals;
         size_t mNumParams; /**< number of parameters in the log-posterior */
