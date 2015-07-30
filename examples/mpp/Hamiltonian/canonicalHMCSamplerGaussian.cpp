@@ -183,9 +183,10 @@ int main(void)
 
     // define a random number seed
     seedType seed = 0;
+    rVGenType rvGen(seed);
 
     // define the Hamiltonian Monte Carlo
-    canonicalHMCType canonHMC(maxEps,maxNumsteps,startPoint,seed,G,K);
+    canonicalHMCType canonHMC(maxEps,maxNumsteps,startPoint,rvGen,G,K);
 
     // define the finite samples control
     // we burn numBurn samples and stop after numSamples are sampled

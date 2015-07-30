@@ -69,6 +69,7 @@ endif(NOT MSVC)
 
 find_package(Eigen3 3.1.2 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS unit_test_framework serialization filesystem system log thread date_time)
+find_package( Threads REQUIRED )
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIR})
