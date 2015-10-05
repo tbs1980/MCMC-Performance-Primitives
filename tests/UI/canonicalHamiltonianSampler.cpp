@@ -7,11 +7,7 @@
 #define BOOST_ALL_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
-#include <mpp/Hamiltonian>
-#include <mpp/control>
-#include <mpp/IO>
-#include <mpp/sampler>
-#include <mpp/UI>
+#include <mpp/core>
 
 template<typename realScalarType>
 void testCanonicalHamiltonianSampler()

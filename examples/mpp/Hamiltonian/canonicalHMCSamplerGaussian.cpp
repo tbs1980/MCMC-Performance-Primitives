@@ -162,6 +162,9 @@ int main(void)
     typedef mpp::sampler::canonicalMCMCSampler<canonicalHMCType,controlType,IOType>
         samplerType;
 
+    // define the random variate generator
+    typedef mpp::utils::randomSTD<double> rVGenType;
+
     // define the diemensionaligy of the problem
     size_t const numParams = 10;
 
@@ -183,9 +186,10 @@ int main(void)
 
     // define a random number seed
     seedType seed = 0;
+    rVGenType rvGen(seed);
 
     // define the Hamiltonian Monte Carlo
-    canonicalHMCType canonHMC(maxEps,maxNumsteps,startPoint,seed,G,K);
+    canonicalHMCType canonHMC(maxEps,maxNumsteps,startPoint,rvGen,G,K);
 
     // define the finite samples control
     // we burn numBurn samples and stop after numSamples are sampled

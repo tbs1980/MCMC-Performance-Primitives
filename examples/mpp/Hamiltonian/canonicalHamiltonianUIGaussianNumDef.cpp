@@ -56,7 +56,7 @@ public:
      * \brief The default constructor that allocates no memory
      */
     GaussianLogPost()
-    :mMu(0,0),mSigmaInv(0,0),Functor<double>()
+    :Functor<double>(),mMu(0,0),mSigmaInv(0,0)
     {
 
     }
@@ -68,7 +68,7 @@ public:
      * \param sigmaInv inverse of the digonal covariance matrix, i.e., 1/variance(i)
      */
     GaussianLogPost(realVectorType const& mu,realDiagMatrixType const& sigmaInv)
-    :mMu(mu),mSigmaInv(sigmaInv),Functor<double>(mu.rows(),1)
+    :Functor<double>(mu.rows(),1),mMu(mu),mSigmaInv(sigmaInv)
     {
 
     }
@@ -253,7 +253,7 @@ int main(void)
     logPostNumDiffType lPNumDiff(G);
 
     // define the step size and the number of steps for the integrator
-    double const maxEps = 1;
+    realScalarType const maxEps = 1;
     size_t const maxNumsteps = 10;
 
     // define the start point
