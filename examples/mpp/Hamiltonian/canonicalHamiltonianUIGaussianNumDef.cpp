@@ -56,7 +56,7 @@ public:
      * \brief The default constructor that allocates no memory
      */
     GaussianLogPost()
-    :mMu(0,0),mSigmaInv(0,0),Functor<double>()
+    :Functor<double>(),mMu(0,0),mSigmaInv(0,0)
     {
 
     }
@@ -68,7 +68,7 @@ public:
      * \param sigmaInv inverse of the digonal covariance matrix, i.e., 1/variance(i)
      */
     GaussianLogPost(realVectorType const& mu,realDiagMatrixType const& sigmaInv)
-    :mMu(mu),mSigmaInv(sigmaInv),Functor<double>(mu.rows(),1)
+    :Functor<double>(mu.rows(),1),mMu(mu),mSigmaInv(sigmaInv)
     {
 
     }
@@ -226,7 +226,7 @@ private:
 int main(void)
 {
     // define the floating point type
-    typedef double realScalarType;
+    //typedef double realScalarType;
     // define the potential energy, i.e., the log-posterior
     typedef GaussianLogPost potEngType;
     // real vector for defining log-posterior, derive from the potEngType
