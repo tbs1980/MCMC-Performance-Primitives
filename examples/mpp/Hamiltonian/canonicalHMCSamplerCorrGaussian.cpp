@@ -192,6 +192,9 @@ int main(void)
     seedType seed = 0;
     rVGenType rvGen(seed);
 
+    // define the random number generator
+    rVGenType rvGen(seed);
+
     // define the Hamiltonian Monte Carlo
     canonicalHMCType canonHMC(maxEps,maxNumsteps,startPoint,rvGen,G,K);
 
