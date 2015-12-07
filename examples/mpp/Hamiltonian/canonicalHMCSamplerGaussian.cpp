@@ -162,6 +162,9 @@ int main(void)
     typedef mpp::sampler::canonicalMCMCSampler<canonicalHMCType,controlType,IOType>
         samplerType;
 
+    // define the random variate generator
+    typedef mpp::utils::randomSTD<double> rVGenType;
+
     // define the diemensionaligy of the problem
     size_t const numParams = 10;
 
@@ -183,6 +186,9 @@ int main(void)
 
     // define a random number seed
     seedType seed = 0;
+    rVGenType rvGen(seed);
+
+    // define the random number generator
     rVGenType rvGen(seed);
 
     // define the Hamiltonian Monte Carlo
