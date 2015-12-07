@@ -226,7 +226,7 @@ private:
 int main(void)
 {
     // define the floating point type
-    //typedef double realScalarType;
+    typedef double realScalarType;
     // define the potential energy, i.e., the log-posterior
     typedef GaussianLogPost potEngType;
     // real vector for defining log-posterior, derive from the potEngType

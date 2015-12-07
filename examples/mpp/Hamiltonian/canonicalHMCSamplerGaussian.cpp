@@ -186,7 +186,6 @@ int main(void)
 
     // define a random number seed
     seedType seed = 0;
-    rVGenType rvGen(seed);
 
     // define the random number generator
     rVGenType rvGen(seed);
