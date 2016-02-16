@@ -11,12 +11,14 @@ mu = np.zeros(numParams)
 sigma_inv = np.ones(numParams)
 
 # define log-posterior function, value is returned to val[0]
-def logPostFunc(q,val):
-    val[0] = -0.5*np.sum( (mu-q)*(mu-q)*sigma_inv )
+def logPostFunc(q):
+    val = -0.5*np.sum( (mu-q)*(mu-q)*sigma_inv )
+    return val
 
 # define the derivatives of the log-post wrt q
-def logPostDerivs(q,dq):
+def logPostDerivs(q):
     dq = sigma_inv*(mu-q)
+    return dq
 
 # maximum value of the parameter epsilon; 0<epsilon<2
 maxEps = 1.

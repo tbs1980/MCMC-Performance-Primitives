@@ -41,6 +41,13 @@ struct numPyTypeTraits<long double>
     }
 };
 
+template<typename T>
+Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,1> > make_vector(T* data,
+    size_t const size)
+{
+    return Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,1> >(data, size);
+}
+
 
 template<typename _realScalarType>
 class pyMppLogPost
@@ -69,13 +76,16 @@ public:
         PyObject* qIn = PyArray_SimpleNewFromData(nd,qDims,
             numPyTypeTraits<realScalarType>::getNumPyDType(),q.data());
 
-        npy_intp valDims[1]={1};
-        PyObject* valOut = PyArray_SimpleNewFromData(nd,valDims,
-            numPyTypeTraits<realScalarType>::getNumPyDType(),&val);
+        Py_ssize_t tupleSize = 1;
+        PyObject* argsTuple = PyTuple_Pack(tupleSize,qIn);
+        PyObject* result = PyEval_CallObject(m_p_logPostFunc,argsTuple);
 
-        Py_ssize_t tupleSize = 2;
-        PyObject* argsTuple = PyTuple_Pack(tupleSize,qIn,valOut);
-        PyEval_CallObject(m_p_logPostFunc,argsTuple);
+        PyArrayObject* pyArrObjVal =
+            reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(result,
+            numPyTypeTraits<realScalarType>::getNumPyDType(), NPY_ARRAY_IN_ARRAY));
+        realScalarType* pVal =
+            static_cast<realScalarType*>(PyArray_DATA(pyArrObjVal));
+        val = *pVal;
     }
 
     inline void derivs(realVectorType   & q,realVectorType & dq)
@@ -85,13 +95,17 @@ public:
         PyObject* qIn = PyArray_SimpleNewFromData(nd,qDims,
             numPyTypeTraits<realScalarType>::getNumPyDType(),q.data());
 
-        npy_intp dQDims[1]={dq.size()};
-        PyObject* dQOut = PyArray_SimpleNewFromData(nd,dQDims,
-            numPyTypeTraits<realScalarType>::getNumPyDType(),dq.data());
+        Py_ssize_t tupleSize = 1;
+        PyObject* argsTuple = PyTuple_Pack(tupleSize,qIn);
+        PyObject* result = PyEval_CallObject(m_p_logPostDerivs,argsTuple);
 
-        Py_ssize_t tupleSize = 2;
-        PyObject* argsTuple = PyTuple_Pack(tupleSize,qIn,dQOut);
-        PyEval_CallObject(m_p_logPostDerivs,argsTuple);
+        PyArrayObject* pyArrObjDQ =
+            reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(result,
+            numPyTypeTraits<realScalarType>::getNumPyDType(), NPY_ARRAY_IN_ARRAY));
+        realScalarType* pDQ =
+            static_cast<realScalarType*>(PyArray_DATA(pyArrObjDQ));
+        realVectorType  dqGot = make_vector<realScalarType>(pDQ,dq.size());
+        dq = dqGot;
     }
 
     inline indexType numDims(void) const
@@ -104,14 +118,6 @@ private:
     PyObject* m_p_logPostDerivs;
     indexType m_numDims;
 };
-
-
-template<typename T>
-Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,1> > make_vector(T* data,
-    size_t const size)
-{
-    return Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,1> >(data, size);
-}
 
 
 template<typename realScalarType>
